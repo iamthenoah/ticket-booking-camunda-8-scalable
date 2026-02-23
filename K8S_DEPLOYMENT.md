@@ -19,15 +19,19 @@ GitHub Actions Workflow
 ## Quick Start (5 Steps)
 
 ### 1. AWS Setup
+
 See [AWS_SETUP.md](AWS_SETUP.md) for detailed instructions:
+
 - Create ECR repositories
-- Create/configure EKS cluster  
+- Create/configure EKS cluster
 - Create GitHub Actions IAM role
 
 ### 2. Configure GitHub Secrets
+
 See [GITHUB_SECRETS.md](GITHUB_SECRETS.md):
 
 Quick method:
+
 ```bash
 chmod +x scripts/setup-github-secrets.sh
 ./scripts/setup-github-secrets.sh
@@ -36,24 +40,29 @@ chmod +x scripts/setup-github-secrets.sh
 Or manually in GitHub UI: Settings → Secrets and variables → Actions
 
 ### 3. Deploy to EKS
+
 First time deployment:
+
 ```bash
 chmod +x scripts/deploy-to-eks.sh
 ./scripts/deploy-to-eks.sh ticket-booking-cluster ticket-booking eu-central-1
 ```
 
 Then push code to trigger automated deployments:
+
 ```bash
 git push origin main
 ```
 
 ### 4. Verify Deployment
+
 ```bash
 kubectl get pods -n ticket-booking
 kubectl get svc -n ticket-booking
 ```
 
 ### 5. Access Services
+
 ```bash
 # Get external IP of booking service
 kubectl get svc booking-service -n ticket-booking
@@ -102,32 +111,40 @@ The workflow file ([.github/workflows/deploy-to-eks.yml](.github/workflows/deplo
 ## Kubernetes Manifests
 
 ### ConfigMap (k8s/configmap.yaml)
+
 Contains non-sensitive configuration:
+
 - RabbitMQ host/port/credentials
 - Payment endpoint URL
 - Zeebe authorization URLs
 
 ### Deployment (k8s/deployment.yaml)
+
 Defines three deployments:
+
 - **RabbitMQ**: 1 replica, port 5672
 - **fake-services**: 1 replica, port 3000
 - **booking-service**: 2 replicas, port 8080
 
 ### Service (k8s/service.yaml)
+
 Exposes services:
+
 - **rabbitmq**: ClusterIP (internal only)
-- **fake-services**: ClusterIP (internal only)  
+- **fake-services**: ClusterIP (internal only)
 - **booking-service**: LoadBalancer (external access)
 
 ## Monitoring & Troubleshooting
 
 ### Check pod status
+
 ```bash
 kubectl get pods -n ticket-booking
 kubectl describe pod <pod-name> -n ticket-booking
 ```
 
 ### View logs
+
 ```bash
 # Booking service
 kubectl logs -f deployment/booking-service -n ticket-booking
@@ -140,11 +157,13 @@ kubectl logs -f deployment/rabbitmq -n ticket-booking
 ```
 
 ### Check events
+
 ```bash
 kubectl get events -n ticket-booking --sort-by='.lastTimestamp'
 ```
 
 ### Test connectivity
+
 ```bash
 # Port forward to test locally
 kubectl port-forward svc/booking-service 8080:80 -n ticket-booking
@@ -154,12 +173,15 @@ curl http://localhost:8080/ticket
 ## Scaling
 
 ### Scale booking service
+
 ```bash
 kubectl scale deployment booking-service --replicas=3 -n ticket-booking
 ```
 
 ### Update replicas in manifest
+
 Edit `k8s/deployment.yaml` and change `replicas: 2` to desired count, then:
+
 ```bash
 kubectl apply -f k8s/deployment.yaml -n ticket-booking
 ```
@@ -167,14 +189,19 @@ kubectl apply -f k8s/deployment.yaml -n ticket-booking
 ## Updates & Rollbacks
 
 ### Rolling update (automatic)
+
 Update code and push:
+
 ```bash
 git push origin main
 ```
+
 GitHub Actions rebuilds images, pushes to ECR, and triggers rolling update.
 
 ### Manual update
+
 Edit image in deployment:
+
 ```bash
 kubectl set image deployment/booking-service \
   booking-service=YOUR_ACCOUNT_ID.dkr.ecr.eu-central-1.amazonaws.com/ticket-booking-service:new-tag \
@@ -182,6 +209,7 @@ kubectl set image deployment/booking-service \
 ```
 
 ### Rollback to previous version
+
 ```bash
 kubectl rollout undo deployment/booking-service -n ticket-booking
 ```
@@ -225,6 +253,7 @@ kubectl rollout undo deployment/booking-service -n ticket-booking
 ## Advanced Features (Optional)
 
 ### Horizontal Pod Autoscaling (HPA)
+
 ```yaml
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -239,23 +268,26 @@ spec:
   minReplicas: 1
   maxReplicas: 5
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
 ```
 
 ### Ingress for Custom Domain
+
 Replace LoadBalancer service with Ingress for domain routing.
 
 ### SSL/TLS
+
 Use AWS Certificate Manager and ALB/NLB with HTTPS.
 
 ## Cleanup
 
 Remove all resources:
+
 ```bash
 # Delete namespace (removes all resources)
 kubectl delete namespace ticket-booking

@@ -100,19 +100,12 @@ aws iam create-role \
     },
     {
       "Effect": "Allow",
-      "Action": [
-        "eks:DescribeCluster",
-        "eks:ListClusters"
-      ],
-      "Resource": [
-        "arn:aws:eks:eu-central-1:YOUR_ACCOUNT_ID:cluster/ticket-booking-cluster"
-      ]
+      "Action": ["eks:DescribeCluster", "eks:ListClusters"],
+      "Resource": ["arn:aws:eks:eu-central-1:YOUR_ACCOUNT_ID:cluster/ticket-booking-cluster"]
     },
     {
       "Effect": "Allow",
-      "Action": [
-        "sts:GetCallerIdentity"
-      ],
+      "Action": ["sts:GetCallerIdentity"],
       "Resource": "*"
     }
   ]
@@ -129,6 +122,7 @@ aws iam put-role-policy \
 ```
 
 Get the role ARN:
+
 ```bash
 aws iam get-role --role-name github-actions-role --query 'Role.Arn' --output text
 ```
@@ -137,18 +131,19 @@ aws iam get-role --role-name github-actions-role --query 'Role.Arn' --output tex
 
 Add the following secrets to your GitHub repository (Settings > Secrets and variables > Actions):
 
-| Secret Name | Value |
-|-------------|-------|
-| `AWS_ACCOUNT_ID` | Your AWS Account ID (12 digits) |
-| `AWS_ROLE_TO_ASSUME` | Full ARN of the `github-actions-role` created above |
-| `EKS_CLUSTER_NAME` | `ticket-booking-cluster` |
-| `ZEEBE_ADDRESS` | From Camunda Platform 8 console (e.g., `cluster-id.cdg-1.zeebe.camunda.io:443`) |
-| `ZEEBE_CLIENT_ID` | From Camunda Platform 8 credentials |
-| `ZEEBE_CLIENT_SECRET` | From Camunda Platform 8 credentials |
-| `ZEEBE_AUTHORIZATION_SERVER_URL` | `https://login.cloud.camunda.io/oauth/token` |
-| `ZEEBE_TOKEN_AUDIENCE` | `zeebe.camunda.io` |
+| Secret Name                      | Value                                                                           |
+| -------------------------------- | ------------------------------------------------------------------------------- |
+| `AWS_ACCOUNT_ID`                 | Your AWS Account ID (12 digits)                                                 |
+| `AWS_ROLE_TO_ASSUME`             | Full ARN of the `github-actions-role` created above                             |
+| `EKS_CLUSTER_NAME`               | `ticket-booking-cluster`                                                        |
+| `ZEEBE_ADDRESS`                  | From Camunda Platform 8 console (e.g., `cluster-id.cdg-1.zeebe.camunda.io:443`) |
+| `ZEEBE_CLIENT_ID`                | From Camunda Platform 8 credentials                                             |
+| `ZEEBE_CLIENT_SECRET`            | From Camunda Platform 8 credentials                                             |
+| `ZEEBE_AUTHORIZATION_SERVER_URL` | `https://login.cloud.camunda.io/oauth/token`                                    |
+| `ZEEBE_TOKEN_AUDIENCE`           | `zeebe.camunda.io`                                                              |
 
 Example in GitHub CLI:
+
 ```bash
 gh secret set AWS_ACCOUNT_ID --body "123456789012"
 gh secret set AWS_ROLE_TO_ASSUME --body "arn:aws:iam::123456789012:role/github-actions-role"
@@ -222,6 +217,7 @@ git push origin main
 ```
 
 This will trigger the GitHub Actions workflow which will:
+
 1. Build Docker images
 2. Push to ECR
 3. Deploy to EKS automatically
@@ -381,6 +377,7 @@ Outputs:
 ```
 
 Deploy:
+
 ```bash
 aws cloudformation create-stack \
   --stack-name ticket-booking-eks \
