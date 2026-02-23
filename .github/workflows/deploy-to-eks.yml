@@ -1,0 +1,132 @@
+name: Deploy to EKS
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+
+env:
+  AWS_REGION: eu-central-1
+  ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.eu-central-1.amazonaws.com
+  BOOKING_SERVICE_IMAGE: ticket-booking-service
+  FAKE_SERVICES_IMAGE: fake-services
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    outputs:
+      booking-service-image: ${{ steps.image-tag.outputs.booking-service }}
+      fake-services-image: ${{ steps.image-tag.outputs.fake-services }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set image tags
+        id: image-tag
+        run: |
+          TIMESTAMP=$(date +%s)
+          COMMIT_SHA=${{ github.sha }}
+          SHORT_SHA=${COMMIT_SHA:0:7}
+          
+          BOOKING_SERVICE_TAG="${{ env.ECR_REGISTRY }}/${{ env.BOOKING_SERVICE_IMAGE }}:${SHORT_SHA}-${TIMESTAMP}"
+          FAKE_SERVICES_TAG="${{ env.ECR_REGISTRY }}/${{ env.FAKE_SERVICES_IMAGE }}:${SHORT_SHA}-${TIMESTAMP}"
+          
+          echo "booking-service=${BOOKING_SERVICE_TAG}" >> $GITHUB_OUTPUT
+          echo "fake-services=${FAKE_SERVICES_TAG}" >> $GITHUB_OUTPUT
+
+      - name: Build and push Booking Service image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./booking-service-java
+          push: true
+          tags: |
+            ${{ steps.image-tag.outputs.booking-service }}
+            ${{ env.ECR_REGISTRY }}/${{ env.BOOKING_SERVICE_IMAGE }}:latest
+
+      - name: Build and push Fake Services image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./fake-services-nodejs
+          push: true
+          tags: |
+            ${{ steps.image-tag.outputs.fake-services }}
+            ${{ env.ECR_REGISTRY }}/${{ env.FAKE_SERVICES_IMAGE }}:latest
+
+  deploy-to-eks:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --name ${{ secrets.EKS_CLUSTER_NAME }} \
+            --region ${{ env.AWS_REGION }}
+
+      - name: Deploy to EKS
+        env:
+          BOOKING_SERVICE_IMAGE: ${{ needs.build-and-push.outputs.booking-service-image }}
+          FAKE_SERVICES_IMAGE: ${{ needs.build-and-push.outputs.fake-services-image }}
+        run: |
+          # Create/update namespace
+          kubectl create namespace ticket-booking --dry-run=client -o yaml | kubectl apply -f -
+          
+          # Create secrets from GitHub secrets
+          kubectl create secret generic camunda-credentials \
+            --from-literal=ZEEBE_ADDRESS=${{ secrets.ZEEBE_ADDRESS }} \
+            --from-literal=ZEEBE_CLIENT_ID=${{ secrets.ZEEBE_CLIENT_ID }} \
+            --from-literal=ZEEBE_CLIENT_SECRET=${{ secrets.ZEEBE_CLIENT_SECRET }} \
+            --from-literal=ZEEBE_AUTHORIZATION_SERVER_URL=${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }} \
+            --from-literal=ZEEBE_TOKEN_AUDIENCE=${{ secrets.ZEEBE_TOKEN_AUDIENCE }} \
+            -n ticket-booking --dry-run=client -o yaml | kubectl apply -f -
+          
+          # Update image references in manifests
+          sed -i "s|BOOKING_SERVICE_IMAGE|${BOOKING_SERVICE_IMAGE}|g" k8s/deployment.yaml
+          sed -i "s|FAKE_SERVICES_IMAGE|${FAKE_SERVICES_IMAGE}|g" k8s/deployment.yaml
+          
+          # Apply Kubernetes manifests
+          kubectl apply -f k8s/configmap.yaml -n ticket-booking
+          kubectl apply -f k8s/deployment.yaml -n ticket-booking
+          kubectl apply -f k8s/service.yaml -n ticket-booking
+          
+          # Wait for rollout
+          kubectl rollout status deployment/booking-service -n ticket-booking --timeout=5m
+          kubectl rollout status deployment/fake-services -n ticket-booking --timeout=5m
+
+      - name: Verify deployment
+        run: |
+          echo "Deployment Status:"
+          kubectl get pods -n ticket-booking
+          kubectl get svc -n ticket-booking
