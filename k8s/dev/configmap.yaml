@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ticket-booking-config
+  namespace: ticket-booking-dev
+data:
+  SPRING_PROFILES_ACTIVE: dev
+  TICKETBOOKING_PAYMENT_ENDPOINT: http://ticket-generator:3000/ticket
+  PORT: "3000"

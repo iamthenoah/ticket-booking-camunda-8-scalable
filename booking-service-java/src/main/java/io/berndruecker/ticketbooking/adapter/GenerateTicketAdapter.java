@@ -6,6 +6,7 @@ import io.camunda.zeebe.spring.client.annotation.JobWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,9 +19,8 @@ public class GenerateTicketAdapter {
 
   Logger logger = LoggerFactory.getLogger(GenerateTicketAdapter.class);
 
-  // This should be of course injected and depends on the environment.
-  // Hard coded for simplicity here
-  public static String ENDPOINT = "http://fake-services:3000/ticket";
+  @Value("${ticketbooking.payment.endpoint:http://ticket-generator:3000/ticket}")
+  private String endpoint;
 
   @Autowired
   private RestTemplate restTemplate;
@@ -37,7 +37,7 @@ public class GenerateTicketAdapter {
     } else {
       
       // Call REST API, simply returns a ticketId
-      CreateTicketResponse ticket = restTemplate.getForObject(ENDPOINT, CreateTicketResponse.class);  
+      CreateTicketResponse ticket = restTemplate.getForObject(endpoint, CreateTicketResponse.class);  
       logger.info("Succeeded with " + ticket);
 
       return Collections.singletonMap(ProcessConstants.VAR_TICKET_ID, ticket.ticketId);

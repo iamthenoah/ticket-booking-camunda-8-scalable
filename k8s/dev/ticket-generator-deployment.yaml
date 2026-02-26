@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ticket-generator
+  namespace: ticket-booking-dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ticket-generator
+  template:
+    metadata:
+      labels:
+        app: ticket-generator
+    spec:
+      containers:
+        - name: ticket-generator
+          image: example.com/placeholder/ticket-generator:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: ticket-booking-config
+                  key: PORT
+            - name: RABBITMQ_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-booking-secrets
+                  key: RABBITMQ_URL
+            - name: ZEEBE_ADDRESS
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-booking-secrets
+                  key: ZEEBE_ADDRESS
+            - name: ZEEBE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-booking-secrets
+                  key: ZEEBE_CLIENT_ID
+            - name: ZEEBE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-booking-secrets
+                  key: ZEEBE_CLIENT_SECRET
+            - name: ZEEBE_AUTHORIZATION_SERVER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-booking-secrets
+                  key: ZEEBE_AUTHORIZATION_SERVER_URL
+            - name: ZEEBE_TOKEN_AUDIENCE
+              valueFrom:
+                secretKeyRef:
+                  name: ticket-booking-secrets
+                  key: ZEEBE_TOKEN_AUDIENCE
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 6
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 300m
+              memory: 256Mi

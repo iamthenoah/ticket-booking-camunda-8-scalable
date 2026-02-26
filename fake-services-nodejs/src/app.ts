@@ -1,10 +1,19 @@
 const { v4: uuidv4 } = require('uuid')
+const amqp = require('amqplib/callback_api')
+const express = require('express')
 
 ////////////////////////////////////
 // FAKE SEAT RESERVATION SERVICE
 ////////////////////////////////////
 import { ZBClient } from 'zeebe-node'
 require('dotenv').config()
+
+const port = Number(process.env.PORT || 3000)
+const rabbitMqUrl = process.env.RABBITMQ_URL || 'amqp://guest:guest@rabbitmq:5672'
+
+let rabbitConnection: any = null
+let rabbitChannel: any = null
+let isShuttingDown = false
 
 const zeebeClient = new ZBClient()
 const worker = zeebeClient.createWorker('reserve-seats', reserveSeatsHandler)
@@ -29,19 +38,20 @@ function reserveSeatsHandler(job, _, worker) {
 ////////////////////////////////////
 // FAKE PAYMENT SERVICE
 ////////////////////////////////////
-var amqp = require('amqplib/callback_api')
-
 const queuePaymentRequest = 'paymentRequest'
 const queuePaymentResponse = 'paymentResponse'
 
-amqp.connect('amqp://rabbitmq', function (error0, connection) {
+amqp.connect(rabbitMqUrl, function (error0, connection) {
   if (error0) {
     throw error0
   }
+  rabbitConnection = connection
+
   connection.createChannel(function (error1, channel) {
     if (error1) {
       throw error1
     }
+    rabbitChannel = channel
 
     channel.assertQueue(queuePaymentRequest, { durable: true })
     channel.assertQueue(queuePaymentResponse, { durable: true })
@@ -70,15 +80,68 @@ amqp.connect('amqp://rabbitmq', function (error0, connection) {
 ////////////////////////////////////
 // FAKE TICKET GENERATION SERVICE
 ////////////////////////////////////
-var express = require('express')
 var app = express()
 
-app.listen(3000, () => {
-  console.log('HTTP Server running on port 3000')
+app.get('/health', (req, res) => {
+  // Lightweight health endpoint for Kubernetes probes.
+  res.status(200).json({ status: 'ok' })
+})
+
+const server = app.listen(port, () => {
+  console.log(`HTTP Server running on port ${port}`)
 })
 
 app.get('/ticket', (req, res, next) => {
   var ticketId = uuidv4()
   console.log('\n\n [x] Create Ticket %s', ticketId)
   res.json({ ticketId: ticketId })
+})
+
+async function shutdown(signal: string) {
+  if (isShuttingDown) {
+    return
+  }
+  isShuttingDown = true
+
+  console.log(`${signal} received. Closing worker and network connections...`)
+
+  // Stop accepting new HTTP traffic first.
+  server.close(() => {
+    console.log('HTTP server closed')
+  })
+
+  try {
+    await worker.close()
+  } catch (error) {
+    console.error('Failed to close Zeebe worker cleanly', error)
+  }
+
+  try {
+    await zeebeClient.close()
+  } catch (error) {
+    console.error('Failed to close Zeebe client cleanly', error)
+  }
+
+  try {
+    if (rabbitChannel) {
+      rabbitChannel.close()
+    }
+    if (rabbitConnection) {
+      rabbitConnection.close()
+    }
+  } catch (error) {
+    console.error('Failed to close RabbitMQ connection cleanly', error)
+  }
+
+  setTimeout(() => {
+    process.exit(0)
+  }, 1000)
+}
+
+process.on('SIGTERM', () => {
+  void shutdown('SIGTERM')
+})
+
+process.on('SIGINT', () => {
+  void shutdown('SIGINT')
 })

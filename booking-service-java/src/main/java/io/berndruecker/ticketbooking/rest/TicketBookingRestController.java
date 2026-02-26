@@ -15,6 +15,7 @@ import org.springframework.web.server.ServerWebExchange;
 
 import io.berndruecker.ticketbooking.ProcessConstants;
 import io.berndruecker.ticketbooking.adapter.RetrievePaymentAdapter;
+import io.berndruecker.ticketbooking.repository.TicketBookingRepository;
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.ZeebeFuture;
 import io.camunda.zeebe.client.api.command.ClientStatusException;
@@ -30,6 +31,9 @@ public class TicketBookingRestController {
 
   @Autowired
   private ZeebeClient client;
+
+  @Autowired
+  private TicketBookingRepository ticketBookingRepository;
 
   @PutMapping("/ticket")
   public ResponseEntity<BookTicketResponse> bookTicket(ServerWebExchange exchange) {
@@ -61,6 +65,14 @@ public class TicketBookingRestController {
       response.reservationId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_RESERVATION_ID);
       response.paymentConfirmationId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_PAYMENT_CONFIRMATION_ID);
       response.ticketId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_TICKET_ID);
+
+      // Persist the final result so bookings can be queried/audited later.
+      ticketBookingRepository.save(
+        response.bookingReferenceId,
+        response.reservationId,
+        response.paymentConfirmationId,
+        response.ticketId
+      );
       
       return ResponseEntity.status(HttpStatus.OK).body(response);
     } catch (ClientStatusException ex) {

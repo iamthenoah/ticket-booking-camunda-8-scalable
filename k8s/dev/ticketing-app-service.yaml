@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ticketing-app
+  namespace: ticket-booking-dev
+spec:
+  type: LoadBalancer
+  selector:
+    app: ticketing-app
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080

@@ -1,0 +1,186 @@
+name: Deploy Dev to EKS
+
+on:
+  push:
+    branches:
+      - main
+      - aws_demo
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  K8S_NAMESPACE: ticket-booking-dev
+  ECR_REPOSITORY_TICKETING_APP: ticket-booking/ticketing-app
+  ECR_REPOSITORY_TICKET_GENERATOR: ticket-booking/ticket-generator
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      ticketing_image: ${{ steps.build-ticketing.outputs.image }}
+      generator_image: ${{ steps.build-generator.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push ticketing app image
+        id: build-ticketing
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          IMAGE="$ECR_REGISTRY/${ECR_REPOSITORY_TICKETING_APP}:${GITHUB_SHA}"
+          docker build -t "$IMAGE" ./booking-service-java
+          docker push "$IMAGE"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push ticket generator image
+        id: build-generator
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          IMAGE="$ECR_REGISTRY/${ECR_REPOSITORY_TICKET_GENERATOR}:${GITHUB_SHA}"
+          docker build -t "$IMAGE" ./fake-services-nodejs
+          docker push "$IMAGE"
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Configure kubectl for EKS
+        run: aws eks update-kubeconfig --name "${{ secrets.EKS_CLUSTER_NAME }}" --region "${{ secrets.AWS_REGION }}"
+
+      - name: Ensure namespace exists
+        run: kubectl apply -f k8s/dev/namespace.yaml
+
+      - name: Upsert Kubernetes secrets
+        env:
+          ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
+          ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
+          ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}
+          ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
+          ZEEBE_TOKEN_AUDIENCE: ${{ secrets.ZEEBE_TOKEN_AUDIENCE }}
+          CAMUNDA_CLUSTER_ID: ${{ secrets.CAMUNDA_CLUSTER_ID }}
+          CAMUNDA_CLUSTER_REGION: ${{ secrets.CAMUNDA_CLUSTER_REGION }}
+          CAMUNDA_CLIENT_ID: ${{ secrets.CAMUNDA_CLIENT_ID }}
+          CAMUNDA_CLIENT_SECRET: ${{ secrets.CAMUNDA_CLIENT_SECRET }}
+          CAMUNDA_OAUTH_URL: ${{ secrets.CAMUNDA_OAUTH_URL }}
+          RABBITMQ_URL: ${{ secrets.RABBITMQ_URL }}
+          SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+          SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+        run: |
+          # Prefer teammate-style ZEEBE_* secrets, but keep CAMUNDA_* as fallback.
+          RAW_ZEEBE_ADDRESS="$ZEEBE_ADDRESS"
+          if [ -z "$RAW_ZEEBE_ADDRESS" ] && [ -n "$CAMUNDA_CLUSTER_ID" ] && [ -n "$CAMUNDA_CLUSTER_REGION" ]; then
+            RAW_ZEEBE_ADDRESS="${CAMUNDA_CLUSTER_ID}.${CAMUNDA_CLUSTER_REGION}.zeebe.camunda.io:443"
+          fi
+
+          if [ -z "$RAW_ZEEBE_ADDRESS" ]; then
+            echo "ZEEBE_ADDRESS is required (or CAMUNDA_CLUSTER_ID + CAMUNDA_CLUSTER_REGION)."
+            exit 1
+          fi
+
+          ZEEBE_ADDRESS_SANITIZED="${RAW_ZEEBE_ADDRESS#grpcs://}"
+          ZEEBE_ADDRESS_SANITIZED="${ZEEBE_ADDRESS_SANITIZED#grpc://}"
+          ZEEBE_ADDRESS_SANITIZED="${ZEEBE_ADDRESS_SANITIZED#https://}"
+          ZEEBE_ADDRESS_SANITIZED="${ZEEBE_ADDRESS_SANITIZED#http://}"
+          ZEEBE_HOST="${ZEEBE_ADDRESS_SANITIZED%%/*}"
+          ZEEBE_HOST_NO_PORT="${ZEEBE_HOST%%:*}"
+
+          DERIVED_CLUSTER_ID="${ZEEBE_HOST_NO_PORT%%.*}"
+          DERIVED_CLUSTER_REGION="${ZEEBE_HOST_NO_PORT#*.}"
+          DERIVED_CLUSTER_REGION="${DERIVED_CLUSTER_REGION%%.*}"
+
+          EFFECTIVE_CAMUNDA_CLUSTER_ID="${CAMUNDA_CLUSTER_ID:-$DERIVED_CLUSTER_ID}"
+          EFFECTIVE_CAMUNDA_CLUSTER_REGION="${CAMUNDA_CLUSTER_REGION:-$DERIVED_CLUSTER_REGION}"
+          EFFECTIVE_ZEEBE_CLIENT_ID="${ZEEBE_CLIENT_ID:-$CAMUNDA_CLIENT_ID}"
+          EFFECTIVE_ZEEBE_CLIENT_SECRET="${ZEEBE_CLIENT_SECRET:-$CAMUNDA_CLIENT_SECRET}"
+          EFFECTIVE_ZEEBE_AUTH_URL="${ZEEBE_AUTHORIZATION_SERVER_URL:-$CAMUNDA_OAUTH_URL}"
+          EFFECTIVE_ZEEBE_TOKEN_AUDIENCE="${ZEEBE_TOKEN_AUDIENCE:-zeebe.camunda.io}"
+
+          if [ -z "$EFFECTIVE_ZEEBE_CLIENT_ID" ] || [ -z "$EFFECTIVE_ZEEBE_CLIENT_SECRET" ] || [ -z "$EFFECTIVE_ZEEBE_AUTH_URL" ]; then
+            echo "ZEEBE_CLIENT_ID, ZEEBE_CLIENT_SECRET, and ZEEBE_AUTHORIZATION_SERVER_URL are required."
+            exit 1
+          fi
+
+          for required_var in RABBITMQ_URL SPRING_DATASOURCE_URL SPRING_DATASOURCE_USERNAME SPRING_DATASOURCE_PASSWORD; do
+            if [ -z "${!required_var}" ]; then
+              echo "$required_var is required."
+              exit 1
+            fi
+          done
+
+          EFFECTIVE_CAMUNDA_CLIENT_ID="${CAMUNDA_CLIENT_ID:-$EFFECTIVE_ZEEBE_CLIENT_ID}"
+          EFFECTIVE_CAMUNDA_CLIENT_SECRET="${CAMUNDA_CLIENT_SECRET:-$EFFECTIVE_ZEEBE_CLIENT_SECRET}"
+          EFFECTIVE_CAMUNDA_OAUTH_URL="${CAMUNDA_OAUTH_URL:-$EFFECTIVE_ZEEBE_AUTH_URL}"
+
+          kubectl create secret generic ticket-booking-secrets \
+            --namespace "$K8S_NAMESPACE" \
+            --from-literal=CAMUNDA_CLUSTER_ID="$EFFECTIVE_CAMUNDA_CLUSTER_ID" \
+            --from-literal=CAMUNDA_CLUSTER_REGION="$EFFECTIVE_CAMUNDA_CLUSTER_REGION" \
+            --from-literal=CAMUNDA_CLIENT_ID="$EFFECTIVE_CAMUNDA_CLIENT_ID" \
+            --from-literal=CAMUNDA_CLIENT_SECRET="$EFFECTIVE_CAMUNDA_CLIENT_SECRET" \
+            --from-literal=CAMUNDA_OAUTH_URL="$EFFECTIVE_CAMUNDA_OAUTH_URL" \
+            --from-literal=ZEEBE_ADDRESS="$RAW_ZEEBE_ADDRESS" \
+            --from-literal=ZEEBE_CLIENT_ID="$EFFECTIVE_ZEEBE_CLIENT_ID" \
+            --from-literal=ZEEBE_CLIENT_SECRET="$EFFECTIVE_ZEEBE_CLIENT_SECRET" \
+            --from-literal=ZEEBE_AUTHORIZATION_SERVER_URL="$EFFECTIVE_ZEEBE_AUTH_URL" \
+            --from-literal=ZEEBE_TOKEN_AUDIENCE="$EFFECTIVE_ZEEBE_TOKEN_AUDIENCE" \
+            --from-literal=RABBITMQ_URL="$RABBITMQ_URL" \
+            --from-literal=SPRING_DATASOURCE_URL="$SPRING_DATASOURCE_URL" \
+            --from-literal=SPRING_DATASOURCE_USERNAME="$SPRING_DATASOURCE_USERNAME" \
+            --from-literal=SPRING_DATASOURCE_PASSWORD="$SPRING_DATASOURCE_PASSWORD" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/dev/configmap.yaml
+          kubectl apply -f k8s/dev/ticket-generator-service.yaml
+          kubectl apply -f k8s/dev/ticketing-app-service.yaml
+          kubectl apply -f k8s/dev/ticket-generator-deployment.yaml
+          kubectl apply -f k8s/dev/ticketing-app-deployment.yaml
+
+      - name: Update deployment images
+        run: |
+          kubectl set image deployment/ticketing-app ticketing-app=${{ needs.build-and-push.outputs.ticketing_image }} -n "$K8S_NAMESPACE"
+          kubectl set image deployment/ticket-generator ticket-generator=${{ needs.build-and-push.outputs.generator_image }} -n "$K8S_NAMESPACE"
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/ticketing-app -n "$K8S_NAMESPACE" --timeout=300s
+          kubectl rollout status deployment/ticket-generator -n "$K8S_NAMESPACE" --timeout=300s
+
+      - name: Print booking endpoint
+        run: |
+          HOSTNAME=$(kubectl get svc ticketing-app -n "$K8S_NAMESPACE" -o jsonpath="{.status.loadBalancer.ingress[0].hostname}")
+          IP=$(kubectl get svc ticketing-app -n "$K8S_NAMESPACE" -o jsonpath="{.status.loadBalancer.ingress[0].ip}")
+          if [ -n "$HOSTNAME" ]; then
+            echo "Booking API URL: http://$HOSTNAME/ticket"
+          elif [ -n "$IP" ]; then
+            echo "Booking API URL: http://$IP/ticket"
+          else
+            echo "LoadBalancer is still provisioning. Re-run: kubectl get svc ticketing-app -n $K8S_NAMESPACE"
+          fi
