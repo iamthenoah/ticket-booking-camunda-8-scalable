@@ -26,6 +26,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Debug GitHub context (OIDC)
+        run: |
+          echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
+          echo "GITHUB_REF=$GITHUB_REF"
+          echo "GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME"
+          echo "GITHUB_ACTOR=$GITHUB_ACTOR"
+
+      - name: Debug OIDC token claims
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken('sts.amazonaws.com');
+            const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'));
+            core.info(`OIDC iss: ${payload.iss}`);
+            core.info(`OIDC aud: ${payload.aud}`);
+            core.info(`OIDC sub: ${payload.sub}`);
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -62,6 +79,23 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Debug GitHub context (OIDC)
+        run: |
+          echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY"
+          echo "GITHUB_REF=$GITHUB_REF"
+          echo "GITHUB_EVENT_NAME=$GITHUB_EVENT_NAME"
+          echo "GITHUB_ACTOR=$GITHUB_ACTOR"
+
+      - name: Debug OIDC token claims
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken('sts.amazonaws.com');
+            const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString('utf8'));
+            core.info(`OIDC iss: ${payload.iss}`);
+            core.info(`OIDC aud: ${payload.aud}`);
+            core.info(`OIDC sub: ${payload.sub}`);
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
