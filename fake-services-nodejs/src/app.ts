@@ -6,7 +6,9 @@ const { v4: uuidv4 } = require('uuid')
 import { ZBClient } from 'zeebe-node'
 require('dotenv').config()
 
-const zeebeClient = new ZBClient()
+const zeebeClient = new ZBClient({
+  hostname: process.env.ZEEBE_ADDRESS || 'localhost:26500'
+})
 const worker = zeebeClient.createWorker('reserve-seats', reserveSeatsHandler)
 
 function reserveSeatsHandler(job, _, worker) {
@@ -33,35 +35,50 @@ var amqp = require('amqplib/callback_api')
 
 const queuePaymentRequest = 'paymentRequest'
 const queuePaymentResponse = 'paymentResponse'
+const amqpUrl = process.env.AMQP_URL || 'amqp://guest:guest@rabbitmq:5672'
 
-amqp.connect('amqp://rabbitmq', function (error0, connection) {
+console.log('Connecting to AMQP at:', amqpUrl.replace(/:[^:@]*@/, ':****@'))
+
+amqp.connect(amqpUrl, function (error0, connection) {
   if (error0) {
+    console.error('ERROR connecting to AMQP:', error0)
     throw error0
   }
+  console.log('✓ Connected to AMQP')
+
   connection.createChannel(function (error1, channel) {
     if (error1) {
+      console.error('ERROR creating channel:', error1)
       throw error1
     }
+    console.log('✓ Channel created')
 
     channel.assertQueue(queuePaymentRequest, { durable: true })
-    channel.assertQueue(queuePaymentResponse, { durable: true })
+    console.log('✓ Queue created/verified:', queuePaymentRequest)
 
+    channel.assertQueue(queuePaymentResponse, { durable: true })
+    console.log('✓ Queue created/verified:', queuePaymentResponse)
+
+    console.log('✓ Starting payment request consumer...')
     channel.consume(
       queuePaymentRequest,
       function (inputMessage) {
-        var paymentRequestId = inputMessage.content.toString()
-        var paymentConfirmationId = uuidv4()
+        if (inputMessage) {
+          var paymentRequestId = inputMessage.content.toString()
+          var paymentConfirmationId = uuidv4()
 
-        console.log('\n\n [x] Received payment request %s', paymentRequestId)
+          console.log('\n✓ [PAYMENT] Received payment request: %s', paymentRequestId)
 
-        var outputMessage =
-          '{"paymentRequestId": "' + paymentRequestId + '", "paymentConfirmationId": "' + paymentConfirmationId + '"}'
+          var outputMessage =
+            '{"paymentRequestId": "' + paymentRequestId + '", "paymentConfirmationId": "' + paymentConfirmationId + '"}'
 
-        channel.sendToQueue(queuePaymentResponse, Buffer.from(outputMessage))
-        console.log(' [x] Sent payment response %s', outputMessage)
+          channel.sendToQueue(queuePaymentResponse, Buffer.from(outputMessage))
+          console.log('✓ [PAYMENT] Sent payment response: %s', outputMessage)
+          channel.ack(inputMessage)
+        }
       },
       {
-        noAck: true
+        noAck: false
       }
     )
   })
