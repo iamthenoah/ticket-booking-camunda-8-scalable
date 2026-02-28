@@ -224,13 +224,8 @@ jobs:
           kubectl apply -f k8s/dev/configmap.yaml
           kubectl apply -f k8s/dev/ticket-generator-service.yaml
           kubectl apply -f k8s/dev/ticketing-app-service.yaml
-          kubectl apply -f k8s/dev/ticket-generator-deployment.yaml
-          kubectl apply -f k8s/dev/ticketing-app-deployment.yaml
-
-      - name: Update deployment images
-        run: |
-          kubectl set image deployment/ticketing-app ticketing-app=${{ steps.resolve-images.outputs.ticketing_image }} -n "$K8S_NAMESPACE"
-          kubectl set image deployment/ticket-generator ticket-generator=${{ steps.resolve-images.outputs.generator_image }} -n "$K8S_NAMESPACE"
+          sed "s|example.com/placeholder/ticket-generator:latest|${{ steps.resolve-images.outputs.generator_image }}|g" k8s/dev/ticket-generator-deployment.yaml | kubectl apply -f -
+          sed "s|example.com/placeholder/ticketing-app:latest|${{ steps.resolve-images.outputs.ticketing_image }}|g" k8s/dev/ticketing-app-deployment.yaml | kubectl apply -f -
 
       - name: Wait for rollout
         run: |
@@ -254,10 +249,20 @@ jobs:
           kubectl describe pods -n "$K8S_NAMESPACE" -l app=ticketing-app || true
           echo "=== ticket-generator pod describe ==="
           kubectl describe pods -n "$K8S_NAMESPACE" -l app=ticket-generator || true
-          echo "=== ticketing-app logs ==="
-          kubectl logs -n "$K8S_NAMESPACE" -l app=ticketing-app --all-containers --tail=200 || true
-          echo "=== ticket-generator logs ==="
-          kubectl logs -n "$K8S_NAMESPACE" -l app=ticket-generator --all-containers --tail=200 || true
+          echo "=== ticketing-app logs (current + previous) ==="
+          for pod in $(kubectl get pods -n "$K8S_NAMESPACE" -l app=ticketing-app -o name); do
+            echo "--- $pod (current) ---"
+            kubectl logs -n "$K8S_NAMESPACE" "$pod" --all-containers --tail=200 || true
+            echo "--- $pod (previous) ---"
+            kubectl logs -n "$K8S_NAMESPACE" "$pod" --all-containers --tail=200 --previous || true
+          done
+          echo "=== ticket-generator logs (current + previous) ==="
+          for pod in $(kubectl get pods -n "$K8S_NAMESPACE" -l app=ticket-generator -o name); do
+            echo "--- $pod (current) ---"
+            kubectl logs -n "$K8S_NAMESPACE" "$pod" --all-containers --tail=200 || true
+            echo "--- $pod (previous) ---"
+            kubectl logs -n "$K8S_NAMESPACE" "$pod" --all-containers --tail=200 --previous || true
+          done
 
       - name: Print booking endpoint
         run: |
