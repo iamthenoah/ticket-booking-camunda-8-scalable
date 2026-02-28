@@ -3,8 +3,7 @@ name: Deploy Dev to EKS
 on:
   push:
     branches:
-      - main
-      - aws_demo
+      - '*'
   workflow_dispatch:
 
 permissions:
