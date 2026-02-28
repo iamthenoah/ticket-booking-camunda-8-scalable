@@ -197,6 +197,27 @@ jobs:
             fi
           done
 
+          if echo "$RABBITMQ_URL" | grep -Eq '^[Hh][Tt][Tt][Pp][Ss]?://'; then
+            echo "RABBITMQ_URL must use AMQP/AMQPS endpoint, not HTTP web console URL."
+            exit 1
+          fi
+          if ! echo "$RABBITMQ_URL" | grep -Eq '^amqps?://'; then
+            echo "RABBITMQ_URL must start with amqp:// or amqps://"
+            exit 1
+          fi
+          if echo "$RABBITMQ_URL" | grep -q '[<>]'; then
+            echo "RABBITMQ_URL contains < or > placeholder characters. Remove them."
+            exit 1
+          fi
+          RABBITMQ_HOSTPORT=$(echo "$RABBITMQ_URL" | sed -E 's#^amqps?://##; s#^[^@]*@##; s#/.*$##')
+          echo "RabbitMQ endpoint host:port -> $RABBITMQ_HOSTPORT"
+
+          if ! echo "$RAW_ZEEBE_ADDRESS" | grep -Eq 'zeebe\.camunda\.io(:443)?$'; then
+            echo "ZEEBE_ADDRESS should normally look like <cluster-id>.<region>.zeebe.camunda.io:443"
+            echo "Current value does not match expected Camunda Zeebe endpoint shape."
+            exit 1
+          fi
+
           EFFECTIVE_CAMUNDA_CLIENT_ID="${CAMUNDA_CLIENT_ID:-$EFFECTIVE_ZEEBE_CLIENT_ID}"
           EFFECTIVE_CAMUNDA_CLIENT_SECRET="${CAMUNDA_CLIENT_SECRET:-$EFFECTIVE_ZEEBE_CLIENT_SECRET}"
           EFFECTIVE_CAMUNDA_OAUTH_URL="${CAMUNDA_OAUTH_URL:-$EFFECTIVE_ZEEBE_AUTH_URL}"
@@ -226,6 +247,11 @@ jobs:
           kubectl apply -f k8s/dev/ticketing-app-service.yaml
           sed "s|example.com/placeholder/ticket-generator:latest|${{ steps.resolve-images.outputs.generator_image }}|g" k8s/dev/ticket-generator-deployment.yaml | kubectl apply -f -
           sed "s|example.com/placeholder/ticketing-app:latest|${{ steps.resolve-images.outputs.ticketing_image }}|g" k8s/dev/ticketing-app-deployment.yaml | kubectl apply -f -
+
+      - name: Restart deployments (pick up secret/config changes)
+        run: |
+          kubectl rollout restart deployment/ticketing-app -n "$K8S_NAMESPACE"
+          kubectl rollout restart deployment/ticket-generator -n "$K8S_NAMESPACE"
 
       - name: Wait for rollout
         run: |
