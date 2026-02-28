@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ticket-booking-config
+  namespace: ticket-booking
+data:
+  SPRING_RABBITMQ_HOST: "rabbitmq"
+  SPRING_RABBITMQ_PORT: "5672"
+  SPRING_RABBITMQ_USERNAME: "guest"
+  SPRING_RABBITMQ_PASSWORD: "guest"
+  TICKETBOOKING_PAYMENT_ENDPOINT: "http://fake-services:3000"
+  ZEEBE_AUTHORIZATION_SERVER_URL: "https://login.cloud.camunda.io/oauth/token"
+  ZEEBE_TOKEN_AUDIENCE: "zeebe.camunda.io"

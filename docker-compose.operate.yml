@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.9
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200/_cluster/health | grep -q '\"status\":\"yellow\"\\|\"status\":\"green\"' && exit 0 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 40s
+    networks:
+      - camunda-network
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+
+  zeebe:
+    image: camunda/zeebe:8.8.0
+    container_name: zeebe
+    environment:
+      - ZEEBE_BROKER_EXPORTERS_CAMUNDA_CLASSNAME=io.camunda.exporter.CamundaExporter
+      - ZEEBE_BROKER_EXPORTERS_CAMUNDA_ARGS_ELASTICSEARCH_HOST=elasticsearch
+      - ZEEBE_BROKER_EXPORTERS_CAMUNDA_ARGS_ELASTICSEARCH_PORT=9200
+      - ZEEBE_BROKER_NETWORK_HOST=0.0.0.0
+      - ZEEBE_BROKER_GATEWAY_NETWORK_HOST=0.0.0.0
+    ports:
+      - "26500:26500"
+      - "9600:9600"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - camunda-network
+    volumes:
+      - zeebe-data:/var/lib/zeebe
+
+  operate:
+    image: camunda/operate:8.8.0
+    container_name: operate
+    environment:
+      - CAMUNDA_OPERATE_ELASTICSEARCH_HOST=elasticsearch
+      - CAMUNDA_OPERATE_ELASTICSEARCH_PORT=9200
+      - CAMUNDA_OPERATE_ZEEBE_GATEWAYADDRESS=zeebe:26500
+      - CAMUNDA_OPERATE_ZEEBE_RESTADDRESS=http://zeebe:8080
+      - CAMUNDA_OPERATE_IDENTITY_ISSUER_URL=
+      - CAMUNDA_OPERATE_IDENTITY_CLIENTID=
+      - CAMUNDA_OPERATE_IDENTITY_CLIENTSECRET=
+      - CAMUNDA_OPERATE_IDENTITY_AUDIENCE=
+    ports:
+      - "8080:8080"
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+      zeebe:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - camunda-network
+
+networks:
+  camunda-network:
+    driver: bridge
+
+volumes:
+  elasticsearch-data:
+  zeebe-data:

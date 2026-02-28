@@ -3,11 +3,11 @@ name: Deploy to EKS
 on:
   push:
     branches:
-      - main
+      - master
       - develop
   pull_request:
     branches:
-      - main
+      - master
 
 env:
   AWS_REGION: eu-central-1
@@ -74,7 +74,7 @@ jobs:
   deploy-to-eks:
     needs: build-and-push
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
     permissions:
       id-token: write
       contents: read

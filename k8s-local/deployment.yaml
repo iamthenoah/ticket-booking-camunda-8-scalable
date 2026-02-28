@@ -1,0 +1,207 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: ticket-booking
+  labels:
+    app: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3-management
+        ports:
+        - name: amqp
+          containerPort: 5672
+        - name: management
+          containerPort: 15672
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: "guest"
+        - name: RABBITMQ_DEFAULT_PASS
+          value: "guest"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          tcpSocket:
+            port: 5672
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 5672
+          initialDelaySeconds: 20
+          periodSeconds: 5
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fake-services
+  namespace: ticket-booking
+  labels:
+    app: fake-services
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fake-services
+  template:
+    metadata:
+      labels:
+        app: fake-services
+    spec:
+      containers:
+      - name: fake-services
+        image: fake-services:local
+        imagePullPolicy: Never
+        ports:
+        - name: http
+          containerPort: 3000
+        env:
+        - name: ZEEBE_ADDRESS
+          valueFrom:
+            secretKeyRef:
+              name: camunda-credentials
+              key: ZEEBE_ADDRESS
+        - name: ZEEBE_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: camunda-credentials
+              key: ZEEBE_CLIENT_ID
+        - name: ZEEBE_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: camunda-credentials
+              key: ZEEBE_CLIENT_SECRET
+        - name: ZEEBE_AUTHORIZATION_SERVER_URL
+          valueFrom:
+            configMapKeyRef:
+              name: ticket-booking-config
+              key: ZEEBE_AUTHORIZATION_SERVER_URL
+        - name: ZEEBE_TOKEN_AUDIENCE
+          valueFrom:
+            configMapKeyRef:
+              name: ticket-booking-config
+              key: ZEEBE_TOKEN_AUDIENCE
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 20
+          periodSeconds: 5
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booking-service
+  namespace: ticket-booking
+  labels:
+    app: booking-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: booking-service
+  template:
+    metadata:
+      labels:
+        app: booking-service
+    spec:
+      containers:
+      - name: booking-service
+        image: booking-service:local
+        imagePullPolicy: Never
+        ports:
+        - name: http
+          containerPort: 8080
+        env:
+        - name: SPRING_RABBITMQ_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: ticket-booking-config
+              key: SPRING_RABBITMQ_HOST
+        - name: SPRING_RABBITMQ_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: ticket-booking-config
+              key: SPRING_RABBITMQ_PORT
+        - name: SPRING_RABBITMQ_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: ticket-booking-config
+              key: SPRING_RABBITMQ_USERNAME
+        - name: SPRING_RABBITMQ_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: ticket-booking-config
+              key: SPRING_RABBITMQ_PASSWORD
+        - name: TICKETBOOKING_PAYMENT_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: ticket-booking-config
+              key: TICKETBOOKING_PAYMENT_ENDPOINT
+        - name: ZEEBE_CLIENT_CLOUD_REGION
+          value: "cdg-1"
+        - name: ZEEBE_CLIENT_CLOUD_CLUSTERID
+          valueFrom:
+            secretKeyRef:
+              name: camunda-credentials
+              key: ZEEBE_ADDRESS
+              optional: true
+        - name: ZEEBE_CLIENT_CLOUD_CLIENTID
+          valueFrom:
+            secretKeyRef:
+              name: camunda-credentials
+              key: ZEEBE_CLIENT_ID
+        - name: ZEEBE_CLIENT_CLOUD_CLIENTSECRET
+          valueFrom:
+            secretKeyRef:
+              name: camunda-credentials
+              key: ZEEBE_CLIENT_SECRET
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /ticket
+            port: 8080
+          initialDelaySeconds: 45
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ticket
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 5
