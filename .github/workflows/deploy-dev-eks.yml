@@ -234,8 +234,30 @@ jobs:
 
       - name: Wait for rollout
         run: |
-          kubectl rollout status deployment/ticketing-app -n "$K8S_NAMESPACE" --timeout=300s
+          kubectl rollout status deployment/ticketing-app -n "$K8S_NAMESPACE" --timeout=600s
           kubectl rollout status deployment/ticket-generator -n "$K8S_NAMESPACE" --timeout=300s
+
+      - name: Debug rollout failure
+        if: failure()
+        run: |
+          echo "=== Deployments ==="
+          kubectl get deployments -n "$K8S_NAMESPACE" -o wide || true
+          echo "=== ReplicaSets ==="
+          kubectl get rs -n "$K8S_NAMESPACE" -o wide || true
+          echo "=== Pods ==="
+          kubectl get pods -n "$K8S_NAMESPACE" -o wide || true
+          echo "=== ticketing-app describe ==="
+          kubectl describe deployment ticketing-app -n "$K8S_NAMESPACE" || true
+          echo "=== ticket-generator describe ==="
+          kubectl describe deployment ticket-generator -n "$K8S_NAMESPACE" || true
+          echo "=== ticketing-app pod describe ==="
+          kubectl describe pods -n "$K8S_NAMESPACE" -l app=ticketing-app || true
+          echo "=== ticket-generator pod describe ==="
+          kubectl describe pods -n "$K8S_NAMESPACE" -l app=ticket-generator || true
+          echo "=== ticketing-app logs ==="
+          kubectl logs -n "$K8S_NAMESPACE" -l app=ticketing-app --all-containers --tail=200 || true
+          echo "=== ticket-generator logs ==="
+          kubectl logs -n "$K8S_NAMESPACE" -l app=ticket-generator --all-containers --tail=200 || true
 
       - name: Print booking endpoint
         run: |
