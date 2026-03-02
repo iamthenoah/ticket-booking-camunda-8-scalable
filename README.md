@@ -275,7 +275,7 @@ Where to get each value:
 
 1. `AWS_ROLE_TO_ASSUME` must be the IAM role ARN, not the EKS access entry ARN.
 2. In IAM JSON policies, replace `ACCOUNT_ID` placeholders with your real 12-digit account ID.
-3. Do not rename repository paths inside policy ARNs unless your ECR repo names are different.
+3. Do not rename repository paths inside policy ARNs unless your ECR repo names are different.g
 4. OIDC trust policy `sub` must use full refs, for example:
    - `repo:iamthenoah/ticket-booking-camunda-8-master:ref:refs/heads/main`
    - `repo:iamthenoah/ticket-booking-camunda-8-master:ref:refs/heads/aws_demo`
