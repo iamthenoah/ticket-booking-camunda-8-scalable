@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: booking-service
-        image: REGISTRY_PLACEHOLDER/ticket-booking-service:latest
+        image: 995014201064.dkr.ecr.us-east-1.amazonaws.com/ticket-booking-service:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: fake-services
-        image: REGISTRY_PLACEHOLDER/fake-services:latest
+        image: 995014201064.dkr.ecr.us-east-1.amazonaws.com/fake-services:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 3000
