@@ -42,7 +42,7 @@ jobs:
           npm test
 
   build-and-push:
-    # needs: test
+    needs: test
     runs-on: ubuntu-latest
     
     steps:
