@@ -1,0 +1,72 @@
+name: Build and Deploy to ECR/EKS
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+
+env:
+  AWS_REGION: us-east-1
+  EKS_CLUSTER_NAME: ticket-booking-cluster
+  EKS_NAMESPACE: ticket-booking
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.NOAH_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.NOAH_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Java booking service image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+          ACCOUNT_ID: ${{ secrets.NOAH_AWS_ACCOUNT_ID }}
+        run: |
+          docker build -t $ECR_REGISTRY/ticket-booking-service:$IMAGE_TAG -t $ECR_REGISTRY/ticket-booking-service:latest ./booking-service-java
+          docker push $ECR_REGISTRY/ticket-booking-service:$IMAGE_TAG
+          docker push $ECR_REGISTRY/ticket-booking-service:latest
+
+      - name: Build and push fake services image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/fake-services:$IMAGE_TAG -t $ECR_REGISTRY/fake-services:latest ./fake-services-nodejs
+          docker push $ECR_REGISTRY/fake-services:$IMAGE_TAG
+          docker push $ECR_REGISTRY/fake-services:latest
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
+      - name: Deploy to EKS
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          ACCOUNT_ID: ${{ secrets.NOAH_AWS_ACCOUNT_ID }}
+        run: |
+          ECR_REGISTRY=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+          kubectl set image deployment/booking-service booking-service=$ECR_REGISTRY/ticket-booking-service:$IMAGE_TAG -n ${{ env.EKS_NAMESPACE }} --record || true
+          kubectl set image deployment/fake-services fake-services=$ECR_REGISTRY/fake-services:$IMAGE_TAG -n ${{ env.EKS_NAMESPACE }} --record || true
+          kubectl rollout status deployment/booking-service -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
+          kubectl rollout status deployment/fake-services -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
+
+      - name: Verify deployment
+        run: |
+          kubectl get pods -n ${{ env.EKS_NAMESPACE }}
+          kubectl get svc -n ${{ env.EKS_NAMESPACE }}
