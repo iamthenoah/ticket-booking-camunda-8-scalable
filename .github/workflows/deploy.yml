@@ -93,8 +93,21 @@ jobs:
           ACCOUNT_ID: ${{ secrets.NOAH_AWS_ACCOUNT_ID }}
         run: |
           ECR_REGISTRY=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-          kubectl set image deployment/booking-service booking-service=$ECR_REGISTRY/ticket-booking-service:$IMAGE_TAG -n ${{ env.EKS_NAMESPACE }} --record || true
+          
+          # First, create namespace and base resources
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/camunda-config.yaml
+          kubectl apply -f k8s/rabbitmq.yaml
+          
+          # Deploy fake-services with the new image
+          kubectl apply -f k8s/fake-services.yaml
           kubectl set image deployment/fake-services fake-services=$ECR_REGISTRY/fake-services:$IMAGE_TAG -n ${{ env.EKS_NAMESPACE }} --record || true
+          
+          # Deploy booking-service with the new image
+          kubectl apply -f k8s/booking-service.yaml
+          kubectl set image deployment/booking-service booking-service=$ECR_REGISTRY/ticket-booking-service:$IMAGE_TAG -n ${{ env.EKS_NAMESPACE }} --record || true
+          
+          # Wait for rollouts
           kubectl rollout status deployment/booking-service -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
           kubectl rollout status deployment/fake-services -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
 
