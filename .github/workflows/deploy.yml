@@ -89,25 +89,18 @@ jobs:
 
       - name: Deploy to EKS
         env:
-          IMAGE_TAG: ${{ github.sha }}
           ACCOUNT_ID: ${{ secrets.NOAH_AWS_ACCOUNT_ID }}
         run: |
           ECR_REGISTRY=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
           
-          # First, create namespace and base resources
-          kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/camunda-config.yaml
-          kubectl apply -f k8s/rabbitmq.yaml
-          
-          # Deploy fake-services with the new image
-          kubectl apply -f k8s/fake-services.yaml
-          kubectl set image deployment/fake-services fake-services=$ECR_REGISTRY/fake-services:$IMAGE_TAG -n ${{ env.EKS_NAMESPACE }} --record || true
-          
-          # Deploy booking-service with the new image
-          kubectl apply -f k8s/booking-service.yaml
-          kubectl set image deployment/booking-service booking-service=$ECR_REGISTRY/ticket-booking-service:$IMAGE_TAG -n ${{ env.EKS_NAMESPACE }} --record || true
-          
-          # Wait for rollouts
+          # Replace registry placeholder and apply
+          sed -e "s|REGISTRY_PLACEHOLDER|$ECR_REGISTRY|g" \
+              .k8s/deployment.yml | kubectl apply -f -
+
+      - name: Restart deployments
+        run: |
+          kubectl rollout restart deployment/booking-service -n ${{ env.EKS_NAMESPACE }} || true
+          kubectl rollout restart deployment/fake-services -n ${{ env.EKS_NAMESPACE }} || true
           kubectl rollout status deployment/booking-service -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
           kubectl rollout status deployment/fake-services -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
 
