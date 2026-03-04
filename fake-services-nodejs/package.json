@@ -20,6 +20,8 @@
     "zeebe-node": "2.4.0"
   },
   "devDependencies": {
+    "@jest/globals": "^29.0.0",
+    "@types/jest": "^29.0.0",
     "@types/node": "^18.0.0",
     "jest": "^29.0.0",
     "ts-jest": "^29.0.0",

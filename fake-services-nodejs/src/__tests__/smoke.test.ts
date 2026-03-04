@@ -1,3 +1,5 @@
+import { describe, test, expect } from '@jest/globals'
+
 describe('Fake Services Health Check', () => {
   test('should have dependencies installed', () => {
     // Basic smoke test - verifies dependencies are available
