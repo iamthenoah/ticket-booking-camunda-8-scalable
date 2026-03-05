@@ -10,7 +10,7 @@ metadata:
   name: booking-service
   namespace: ticket-booking
 spec:
-  replicas: 2
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -47,18 +47,6 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "1000m"
-        livenessProbe:
-          httpGet:
-            path: /actuator/health
-            port: 8080
-          initialDelaySeconds: 40
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /actuator/health/readiness
-            port: 8080
-          initialDelaySeconds: 20
-          periodSeconds: 5
 
 ---
 apiVersion: v1
