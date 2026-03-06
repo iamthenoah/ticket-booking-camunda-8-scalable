@@ -1,0 +1,191 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ticket-booking
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: booking-service
+  namespace: ticket-booking
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: booking-service
+  template:
+    metadata:
+      labels:
+        app: booking-service
+    spec:
+      containers:
+      - name: booking-service
+        image: REGISTRY_PLACEHOLDER/ticket-booking-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: SPRING_RABBITMQ_HOST
+          value: "rabbitmq.ticket-booking.svc.cluster.local"
+        - name: SPRING_RABBITMQ_PORT
+          value: "5672"
+        - name: SPRING_RABBITMQ_USERNAME
+          value: "guest"
+        - name: SPRING_RABBITMQ_PASSWORD
+          value: "guest"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "1000m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: booking-service
+  namespace: ticket-booking
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+    name: http
+  selector:
+    app: booking-service
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fake-services
+  namespace: ticket-booking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fake-services
+  template:
+    metadata:
+      labels:
+        app: fake-services
+    spec:
+      containers:
+      - name: fake-services
+        image: REGISTRY_PLACEHOLDER/fake-services:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          name: http
+        env:
+        - name: ZEEBE_ADDRESS
+          value: "d21e4983-4515-45ef-902d-d7d7309433bf.cdg-1.zeebe.camunda.io:443"
+        - name: ZEEBE_CLIENT_ID
+          value: "A-cIR7aO5uK4VyTNi_tYKibHxTSqr2g_"
+        - name: ZEEBE_CLIENT_SECRET
+          value: "oayXzgORlh7Dih8rS8XRW_haNWJ2PZeDfUkR~9yF74Bats01RTX2OFowjfRMgpIe"
+        - name: ZEEBE_AUTHORIZATION_SERVER_URL
+          value: "https://login.cloud.camunda.io/oauth/token"
+        - name: ZEEBE_GRPC_ADDRESS
+          value: "grpcs://d21e4983-4515-45ef-902d-d7d7309433bf.cdg-1.zeebe.camunda.io:443"
+        - name: ZEEBE_TOKEN_AUDIENCE
+          value: "zeebe.camunda.io"
+        - name: CAMUNDA_TOKEN_AUDIENCE
+          value: "zeebe.camunda.io"
+        - name: CAMUNDA_CLUSTER_ID
+          value: "d21e4983-4515-45ef-902d-d7d7309433bf"
+        - name: CAMUNDA_CLIENT_ID
+          value: "A-cIR7aO5uK4VyTNi_tYKibHxTSqr2g_"
+        - name: CAMUNDA_CLIENT_SECRET
+          value: "oayXzgORlh7Dih8rS8XRW_haNWJ2PZeDfUkR~9yF74Bats01RTX2OFowjfRMgpIe"
+        - name: CAMUNDA_CLUSTER_REGION
+          value: "cdg-1"
+        - name: CAMUNDA_OAUTH_URL
+          value: "https://login.cloud.camunda.io/oauth/token"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fake-services
+  namespace: ticket-booking
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000
+    name: http
+  selector:
+    app: fake-services
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: ticket-booking
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3-management
+        ports:
+        - containerPort: 5672
+          name: amqp
+        - containerPort: 15672
+          name: management
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: "guest"
+        - name: RABBITMQ_DEFAULT_PASS
+          value: "guest"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: ticket-booking
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5672
+    targetPort: 5672
+    name: amqp
+  - port: 15672
+    targetPort: 15672
+    name: management
+  selector:
+    app: rabbitmq
