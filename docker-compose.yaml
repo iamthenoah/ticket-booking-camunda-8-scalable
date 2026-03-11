@@ -47,10 +47,6 @@ services:
       ZEEBE_CLIENT_CLOUD_CLUSTERID: e942dd69-310c-4d3c-bae4-a9fd182f5235
       ZEEBE_CLIENT_CLOUD_CLIENTID: h7vfi9gVg2S_-pdwuQnWPRPVcNethogN
       ZEEBE_CLIENT_CLOUD_CLIENTSECRET: ihGYnq-unAEcYxriaIa7xUze0m1nUqZ~.0GJnNp4O1U.Ro2ZhIp93qFNR6fntFi1
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: "5672"
-      SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
     depends_on:
       rabbitmq:
         condition: service_healthy

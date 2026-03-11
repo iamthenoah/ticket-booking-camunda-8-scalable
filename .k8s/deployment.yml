@@ -40,14 +40,6 @@ spec:
           value: "ZEEBE_CLIENT_CLOUD_CLIENTID_PLACEHOLDER"
         - name: ZEEBE_CLIENT_CLOUD_CLIENTSECRET
           value: "ZEEBE_CLIENT_CLOUD_CLIENTSECRET_PLACEHOLDER"
-        - name: SPRING_RABBITMQ_HOST
-          value: "rabbitmq.ticket-booking.svc.cluster.local"
-        - name: SPRING_RABBITMQ_PORT
-          value: "5672"
-        - name: SPRING_RABBITMQ_USERNAME
-          value: "guest"
-        - name: SPRING_RABBITMQ_PASSWORD
-          value: "guest"
         resources:
           requests:
             memory: "256Mi"
