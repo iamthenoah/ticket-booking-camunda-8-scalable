@@ -87,11 +87,27 @@ jobs:
       - name: Deploy to EKS
         env:
           ACCOUNT_ID: ${{ secrets.NOAH_AWS_ACCOUNT_ID }}
+          ZEEBE_CLIENT_CLOUD_REGION: ${{ secrets.ZEEBE_CLIENT_CLOUD_REGION }}
+          ZEEBE_CLIENT_CLOUD_CLUSTERID: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLUSTERID }}
+          ZEEBE_CLIENT_CLOUD_CLIENTID: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLIENTID }}
+          ZEEBE_CLIENT_CLOUD_CLIENTSECRET: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLIENTSECRET }}
+          ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
+          ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
+          ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}
+          ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
         run: |
           ECR_REGISTRY=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
           
           # Deploy everything (RabbitMQ error ignored on updates)
           sed -e "s|REGISTRY_PLACEHOLDER|$ECR_REGISTRY|g" \
+              -e "s|ZEEBE_CLIENT_CLOUD_REGION_PLACEHOLDER|$ZEEBE_CLIENT_CLOUD_REGION|g" \
+              -e "s|ZEEBE_CLIENT_CLOUD_CLUSTERID_PLACEHOLDER|$ZEEBE_CLIENT_CLOUD_CLUSTERID|g" \
+              -e "s|ZEEBE_CLIENT_CLOUD_CLIENTID_PLACEHOLDER|$ZEEBE_CLIENT_CLOUD_CLIENTID|g" \
+              -e "s|ZEEBE_CLIENT_CLOUD_CLIENTSECRET_PLACEHOLDER|$ZEEBE_CLIENT_CLOUD_CLIENTSECRET|g" \
+              -e "s|ZEEBE_ADDRESS_PLACEHOLDER|$ZEEBE_ADDRESS|g" \
+              -e "s|ZEEBE_CLIENT_ID_PLACEHOLDER|$ZEEBE_CLIENT_ID|g" \
+              -e "s|ZEEBE_CLIENT_SECRET_PLACEHOLDER|$ZEEBE_CLIENT_SECRET|g" \
+              -e "s|ZEEBE_AUTHORIZATION_SERVER_URL_PLACEHOLDER|$ZEEBE_AUTHORIZATION_SERVER_URL|g" \
               .k8s/deployment.yml | kubectl apply -f - || true
 
       - name: Restart deployments

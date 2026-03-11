@@ -33,13 +33,13 @@ spec:
           name: http
         env:
         - name: ZEEBE_CLIENT_CLOUD_REGION
-          value: "lhr-1"
+          value: "ZEEBE_CLIENT_CLOUD_REGION_PLACEHOLDER"
         - name: ZEEBE_CLIENT_CLOUD_CLUSTERID
-          value: "e942dd69-310c-4d3c-bae4-a9fd182f5235"
+          value: "ZEEBE_CLIENT_CLOUD_CLUSTERID_PLACEHOLDER"
         - name: ZEEBE_CLIENT_CLOUD_CLIENTID
-          value: "h7vfi9gVg2S_-pdwuQnWPRPVcNethogN"
+          value: "ZEEBE_CLIENT_CLOUD_CLIENTID_PLACEHOLDER"
         - name: ZEEBE_CLIENT_CLOUD_CLIENTSECRET
-          value: "ihGYnq-unAEcYxriaIa7xUze0m1nUqZ~.0GJnNp4O1U.Ro2ZhIp93qFNR6fntFi1"
+          value: "ZEEBE_CLIENT_CLOUD_CLIENTSECRET_PLACEHOLDER"
         - name: SPRING_RABBITMQ_HOST
           value: "rabbitmq.ticket-booking.svc.cluster.local"
         - name: SPRING_RABBITMQ_PORT
@@ -48,8 +48,6 @@ spec:
           value: "guest"
         - name: SPRING_RABBITMQ_PASSWORD
           value: "guest"
-        - name: TICKETBOOKING_PAYMENT_ENDPOINT
-          value: "http://fake-services.ticket-booking.svc.cluster.local:3000"
         resources:
           requests:
             memory: "256Mi"
@@ -99,13 +97,13 @@ spec:
           name: http
         env:
         - name: ZEEBE_ADDRESS
-          value: "e942dd69-310c-4d3c-bae4-a9fd182f5235.lhr-1.zeebe.camunda.io:443"
+          value: "ZEEBE_ADDRESS_PLACEHOLDER"
         - name: ZEEBE_CLIENT_ID
-          value: "h7vfi9gVg2S_-pdwuQnWPRPVcNethogN"
+          value: "ZEEBE_CLIENT_ID_PLACEHOLDER"
         - name: ZEEBE_CLIENT_SECRET
-          value: "ihGYnq-unAEcYxriaIa7xUze0m1nUqZ~.0GJnNp4O1U.Ro2ZhIp93qFNR6fntFi1"
+          value: "ZEEBE_CLIENT_SECRET_PLACEHOLDER"
         - name: ZEEBE_AUTHORIZATION_SERVER_URL
-          value: "https://login.cloud.camunda.io/oauth/token"
+          value: "ZEEBE_AUTHORIZATION_SERVER_URL_PLACEHOLDER"
         resources:
           requests:
             memory: "256Mi"
