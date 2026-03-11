@@ -32,6 +32,14 @@ spec:
         - containerPort: 8080
           name: http
         env:
+        - name: ZEEBE_CLIENT_CLOUD_REGION
+          value: "lhr-1"
+        - name: ZEEBE_CLIENT_CLOUD_CLUSTERID
+          value: "e942dd69-310c-4d3c-bae4-a9fd182f5235"
+        - name: ZEEBE_CLIENT_CLOUD_CLIENTID
+          value: "h7vfi9gVg2S_-pdwuQnWPRPVcNethogN"
+        - name: ZEEBE_CLIENT_CLOUD_CLIENTSECRET
+          value: "ihGYnq-unAEcYxriaIa7xUze0m1nUqZ~.0GJnNp4O1U.Ro2ZhIp93qFNR6fntFi1"
         - name: SPRING_RABBITMQ_HOST
           value: "rabbitmq.ticket-booking.svc.cluster.local"
         - name: SPRING_RABBITMQ_PORT
@@ -40,6 +48,8 @@ spec:
           value: "guest"
         - name: SPRING_RABBITMQ_PASSWORD
           value: "guest"
+        - name: TICKETBOOKING_PAYMENT_ENDPOINT
+          value: "http://fake-services.ticket-booking.svc.cluster.local:3000"
         resources:
           requests:
             memory: "256Mi"

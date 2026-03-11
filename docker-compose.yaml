@@ -42,6 +42,16 @@ services:
     container_name: booking-service
     ports:
       - "8080:8080"
+    environment:
+      ZEEBE_CLIENT_CLOUD_REGION: lhr-1
+      ZEEBE_CLIENT_CLOUD_CLUSTERID: e942dd69-310c-4d3c-bae4-a9fd182f5235
+      ZEEBE_CLIENT_CLOUD_CLIENTID: h7vfi9gVg2S_-pdwuQnWPRPVcNethogN
+      ZEEBE_CLIENT_CLOUD_CLIENTSECRET: ihGYnq-unAEcYxriaIa7xUze0m1nUqZ~.0GJnNp4O1U.Ro2ZhIp93qFNR6fntFi1
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: "5672"
+      SPRING_RABBITMQ_USERNAME: guest
+      SPRING_RABBITMQ_PASSWORD: guest
+      TICKETBOOKING_PAYMENT_ENDPOINT: http://fake-services:3000
     depends_on:
       rabbitmq:
         condition: service_healthy
