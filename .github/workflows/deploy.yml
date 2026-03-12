@@ -3,7 +3,7 @@ name: Build and Deploy to ECR/EKS
 on:
   push:
     branches:
-      - "**"
+      - master
 
 env:
   AWS_REGION: us-east-1
