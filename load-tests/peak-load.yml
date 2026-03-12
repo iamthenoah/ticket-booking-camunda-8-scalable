@@ -1,0 +1,60 @@
+config:
+  target: "http://a724c736bdfbf4e42875d8f1e19c5069-710728609.us-east-1.elb.amazonaws.com"
+  phases:
+    - name: "Warm up"
+      duration: 60
+      arrivalRate: 5
+    - name: "Ramp up to peak"
+      duration: 60
+      arrivalRate: 5
+      rampTo: 100
+    - name: "Peak burst"
+      duration: 120
+      arrivalRate: 100
+    - name: "Spike to maximum"
+      duration: 60
+      arrivalRate: 100
+      rampTo: 150
+    - name: "Sustained peak"
+      duration: 60
+      arrivalRate: 150
+    - name: "Cool down"
+      duration: 60
+      arrivalRate: 150
+      rampTo: 5
+  ensure:
+    p99: 5000
+    maxErrorRate: 20
+  plugins:
+    metrics-by-endpoint: {}
+
+scenarios:
+  - name: "Book a ticket"
+    weight: 70
+    flow:
+      - put:
+          url: "/ticket"
+          expect:
+            - statusCode: 200
+
+  - name: "Seat reservation failure"
+    weight: 15
+    flow:
+      - put:
+          url: "/ticket?simulateBookingFailure=seats"
+          expect:
+            - statusCode:
+                - 200
+                - 400
+                - 409
+
+  - name: "Ticket generation failure"
+    weight: 15
+    flow:
+      - put:
+          url: "/ticket?simulateBookingFailure=ticket"
+          expect:
+            - statusCode:
+                - 200
+                - 400
+                - 500
