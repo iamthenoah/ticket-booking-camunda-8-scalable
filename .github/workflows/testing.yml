@@ -1,4 +1,4 @@
-name: Build and Deploy to ECR/EKS
+name: Run Unit Tests
 
 on:
   push:
