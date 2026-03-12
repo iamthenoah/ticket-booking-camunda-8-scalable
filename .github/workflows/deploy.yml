@@ -3,7 +3,7 @@ name: Build and Deploy to ECR/EKS
 on:
   push:
     branches:
-      - "**"
+      - master
 
 env:
   AWS_REGION: us-east-1
@@ -25,6 +25,11 @@ jobs:
           distribution: 'temurin'
 
       - name: Test Java Booking Service
+        env:
+          ZEEBE_CLIENT_CLOUD_REGION: ${{ secrets.ZEEBE_CLIENT_CLOUD_REGION }}
+          ZEEBE_CLIENT_CLOUD_CLUSTERID: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLUSTERID }}
+          ZEEBE_CLIENT_CLOUD_CLIENTID: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLIENTID }}
+          ZEEBE_CLIENT_CLOUD_CLIENTSECRET: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLIENTSECRET }}
         run: |
           cd booking-service-java
           mvn clean test -DskipTests=false
@@ -35,6 +40,11 @@ jobs:
           node-version: '16'
 
       - name: Test Node.js Fake Services
+        env:
+          ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
+          ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
+          ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}
+          ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
         run: |
           cd fake-services-nodejs
           npm install
@@ -66,8 +76,19 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
           ACCOUNT_ID: ${{ secrets.NOAH_AWS_ACCOUNT_ID }}
+          ZEEBE_CLIENT_CLOUD_REGION: ${{ secrets.ZEEBE_CLIENT_CLOUD_REGION }}
+          ZEEBE_CLIENT_CLOUD_CLUSTERID: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLUSTERID }}
+          ZEEBE_CLIENT_CLOUD_CLIENTID: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLIENTID }}
+          ZEEBE_CLIENT_CLOUD_CLIENTSECRET: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLIENTSECRET }}
         run: |
-          docker build -t $ECR_REGISTRY/ticket-booking-service:$IMAGE_TAG -t $ECR_REGISTRY/ticket-booking-service:latest ./booking-service-java
+          docker build \
+            --build-arg ZEEBE_CLIENT_CLOUD_REGION=$ZEEBE_CLIENT_CLOUD_REGION \
+            --build-arg ZEEBE_CLIENT_CLOUD_CLUSTERID=$ZEEBE_CLIENT_CLOUD_CLUSTERID \
+            --build-arg ZEEBE_CLIENT_CLOUD_CLIENTID=$ZEEBE_CLIENT_CLOUD_CLIENTID \
+            --build-arg ZEEBE_CLIENT_CLOUD_CLIENTSECRET=$ZEEBE_CLIENT_CLOUD_CLIENTSECRET \
+            -t $ECR_REGISTRY/ticket-booking-service:$IMAGE_TAG \
+            -t $ECR_REGISTRY/ticket-booking-service:latest \
+            ./booking-service-java
           docker push $ECR_REGISTRY/ticket-booking-service:$IMAGE_TAG
           docker push $ECR_REGISTRY/ticket-booking-service:latest
 
@@ -75,23 +96,46 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
+          ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
+          ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
+          ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}
+          ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
         run: |
-          docker build -t $ECR_REGISTRY/fake-services:$IMAGE_TAG -t $ECR_REGISTRY/fake-services:latest ./fake-services-nodejs
+          docker build \
+            --build-arg ZEEBE_ADDRESS=$ZEEBE_ADDRESS \
+            --build-arg ZEEBE_CLIENT_ID=$ZEEBE_CLIENT_ID \
+            --build-arg ZEEBE_CLIENT_SECRET=$ZEEBE_CLIENT_SECRET \
+            --build-arg ZEEBE_AUTHORIZATION_SERVER_URL=$ZEEBE_AUTHORIZATION_SERVER_URL \
+            -t $ECR_REGISTRY/fake-services:$IMAGE_TAG \
+            -t $ECR_REGISTRY/fake-services:latest \
+            ./fake-services-nodejs
           docker push $ECR_REGISTRY/fake-services:$IMAGE_TAG
           docker push $ECR_REGISTRY/fake-services:latest
-
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
       - name: Deploy to EKS
         env:
           ACCOUNT_ID: ${{ secrets.NOAH_AWS_ACCOUNT_ID }}
+          ZEEBE_CLIENT_CLOUD_REGION: ${{ secrets.ZEEBE_CLIENT_CLOUD_REGION }}
+          ZEEBE_CLIENT_CLOUD_CLUSTERID: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLUSTERID }}
+          ZEEBE_CLIENT_CLOUD_CLIENTID: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLIENTID }}
+          ZEEBE_CLIENT_CLOUD_CLIENTSECRET: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLIENTSECRET }}
+          ZEEBE_ADDRESS: ${{ secrets.ZEEBE_ADDRESS }}
+          ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
+          ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}
+          ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
         run: |
           ECR_REGISTRY=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
           
           # Deploy everything (RabbitMQ error ignored on updates)
           sed -e "s|REGISTRY_PLACEHOLDER|$ECR_REGISTRY|g" \
+              -e "s|ZEEBE_CLIENT_CLOUD_REGION_PLACEHOLDER|$ZEEBE_CLIENT_CLOUD_REGION|g" \
+              -e "s|ZEEBE_CLIENT_CLOUD_CLUSTERID_PLACEHOLDER|$ZEEBE_CLIENT_CLOUD_CLUSTERID|g" \
+              -e "s|ZEEBE_CLIENT_CLOUD_CLIENTID_PLACEHOLDER|$ZEEBE_CLIENT_CLOUD_CLIENTID|g" \
+              -e "s|ZEEBE_CLIENT_CLOUD_CLIENTSECRET_PLACEHOLDER|$ZEEBE_CLIENT_CLOUD_CLIENTSECRET|g" \
+              -e "s|ZEEBE_ADDRESS_PLACEHOLDER|$ZEEBE_ADDRESS|g" \
+              -e "s|ZEEBE_CLIENT_ID_PLACEHOLDER|$ZEEBE_CLIENT_ID|g" \
+              -e "s|ZEEBE_CLIENT_SECRET_PLACEHOLDER|$ZEEBE_CLIENT_SECRET|g" \
+              -e "s|ZEEBE_AUTHORIZATION_SERVER_URL_PLACEHOLDER|$ZEEBE_AUTHORIZATION_SERVER_URL|g" \
               .k8s/deployment.yml | kubectl apply -f - || true
 
       - name: Restart deployments
@@ -100,6 +144,10 @@ jobs:
           kubectl rollout restart deployment/fake-services -n ${{ env.EKS_NAMESPACE }} || true
           kubectl rollout status deployment/booking-service -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
           kubectl rollout status deployment/fake-services -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
+          
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
       - name: Verify deployment
         run: |

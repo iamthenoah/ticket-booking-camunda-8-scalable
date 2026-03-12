@@ -1,0 +1,11 @@
+config:
+  target: "http://a724c736bdfbf4e42875d8f1e19c5069-710728609.us-east-1.elb.amazonaws.com"
+  phases:
+    - duration: 60
+      arrivalRate: 3
+      name: "Low Load : 5000 requests/day"
+scenarios:
+  - name: "Book a ticket"
+    flow:
+      - put:
+          url: "/ticket"
