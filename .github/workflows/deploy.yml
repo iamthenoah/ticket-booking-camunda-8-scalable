@@ -112,10 +112,6 @@ jobs:
           docker push $ECR_REGISTRY/fake-services:$IMAGE_TAG
           docker push $ECR_REGISTRY/fake-services:latest
 
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
-
       - name: Deploy to EKS
         env:
           ACCOUNT_ID: ${{ secrets.NOAH_AWS_ACCOUNT_ID }}
@@ -148,6 +144,10 @@ jobs:
           kubectl rollout restart deployment/fake-services -n ${{ env.EKS_NAMESPACE }} || true
           kubectl rollout status deployment/booking-service -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
           kubectl rollout status deployment/fake-services -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
+          
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
       - name: Verify deployment
         run: |
