@@ -112,6 +112,10 @@ jobs:
           docker push $ECR_REGISTRY/fake-services:$IMAGE_TAG
           docker push $ECR_REGISTRY/fake-services:latest
 
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
       - name: Deploy to EKS
         env:
           ACCOUNT_ID: ${{ secrets.NOAH_AWS_ACCOUNT_ID }}
@@ -124,9 +128,9 @@ jobs:
           ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}
           ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
         run: |
+          set -euo pipefail
           ECR_REGISTRY=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
           
-          # Deploy everything (RabbitMQ error ignored on updates)
           sed -e "s|REGISTRY_PLACEHOLDER|$ECR_REGISTRY|g" \
               -e "s|ZEEBE_CLIENT_CLOUD_REGION_PLACEHOLDER|$ZEEBE_CLIENT_CLOUD_REGION|g" \
               -e "s|ZEEBE_CLIENT_CLOUD_CLUSTERID_PLACEHOLDER|$ZEEBE_CLIENT_CLOUD_CLUSTERID|g" \
@@ -136,20 +140,34 @@ jobs:
               -e "s|ZEEBE_CLIENT_ID_PLACEHOLDER|$ZEEBE_CLIENT_ID|g" \
               -e "s|ZEEBE_CLIENT_SECRET_PLACEHOLDER|$ZEEBE_CLIENT_SECRET|g" \
               -e "s|ZEEBE_AUTHORIZATION_SERVER_URL_PLACEHOLDER|$ZEEBE_AUTHORIZATION_SERVER_URL|g" \
-              .k8s/deployment.yml | kubectl apply -f - || true
+              .k8s/deployment.yml > rendered-deployment.yml
+
+          kubectl apply -f rendered-deployment.yml
+
+      - name: Apply monitoring resources
+        run: |
+          set -euo pipefail
+
+          if kubectl get namespace monitoring >/dev/null 2>&1; then
+            kubectl apply -k .k8s/monitoring
+          else
+            echo "Monitoring namespace not found; skipping .k8s/monitoring apply."
+          fi
 
       - name: Restart deployments
         run: |
-          kubectl rollout restart deployment/booking-service -n ${{ env.EKS_NAMESPACE }} || true
-          kubectl rollout restart deployment/fake-services -n ${{ env.EKS_NAMESPACE }} || true
-          kubectl rollout status deployment/booking-service -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
-          kubectl rollout status deployment/fake-services -n ${{ env.EKS_NAMESPACE }} --timeout=5m || true
-          
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+          set -euo pipefail
+
+          kubectl rollout restart deployment/booking-service -n ${{ env.EKS_NAMESPACE }}
+          kubectl rollout restart deployment/fake-services -n ${{ env.EKS_NAMESPACE }}
+          kubectl rollout restart deployment/rabbitmq -n ${{ env.EKS_NAMESPACE }}
+
+          kubectl rollout status deployment/booking-service -n ${{ env.EKS_NAMESPACE }} --timeout=5m
+          kubectl rollout status deployment/fake-services -n ${{ env.EKS_NAMESPACE }} --timeout=5m
+          kubectl rollout status deployment/rabbitmq -n ${{ env.EKS_NAMESPACE }} --timeout=5m
 
       - name: Verify deployment
         run: |
+          set -euo pipefail
           kubectl get pods -n ${{ env.EKS_NAMESPACE }}
-          kubectl get svc -n ${{ env.EKS_NAMESPACE }}
+          kubectl get svc -n ${{ env.EKS_NAMESPACE }} --show-labels

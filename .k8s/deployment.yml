@@ -10,7 +10,7 @@ metadata:
   name: booking-service
   namespace: ticket-booking
 spec:
-  replicas: 1
+  replicas: 3
   strategy:
     type: RollingUpdate
     rollingUpdate:

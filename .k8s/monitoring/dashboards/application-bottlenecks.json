@@ -202,13 +202,13 @@
       "targets": [
         {
           "datasource": "Prometheus",
-          "expr": "histogram_quantile(0.5, sum by (le, step) (rate(ticket_booking_step_seconds_bucket{namespace=\"$namespace\", status=\"success\", step=~\"payment_publish|payment_wait|payment_correlate|ticket_http\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.5, sum by (le, step) (rate(ticket_booking_step_seconds_bucket{namespace=\"$namespace\", status=\"success\", step=~\"workflow_wait|payment_publish|payment_wait|payment_correlate|ticket_http\"}[$__rate_interval])))",
           "legendFormat": "p50 {{step}}",
           "refId": "A"
         },
         {
           "datasource": "Prometheus",
-          "expr": "histogram_quantile(0.95, sum by (le, step) (rate(ticket_booking_step_seconds_bucket{namespace=\"$namespace\", status=\"success\", step=~\"payment_publish|payment_wait|payment_correlate|ticket_http\"}[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum by (le, step) (rate(ticket_booking_step_seconds_bucket{namespace=\"$namespace\", status=\"success\", step=~\"workflow_wait|payment_publish|payment_wait|payment_correlate|ticket_http\"}[$__rate_interval])))",
           "legendFormat": "p95 {{step}}",
           "refId": "B"
         }
