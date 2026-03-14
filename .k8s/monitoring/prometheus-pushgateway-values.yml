@@ -1,0 +1,18 @@
+fullnameOverride: pushgateway
+
+service:
+  type: ClusterIP
+
+serviceMonitor:
+  enabled: false
+
+extraArgs:
+  - --web.enable-admin-api
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi

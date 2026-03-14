@@ -1,0 +1,449 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "max by (run_id) (artillery_rates{metric=\"http_request_rate\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"})",
+          "legendFormat": "{{run_id}}",
+          "refId": "A"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "max by (run_id) (ticket_booking_loadtest_expected_request_rate{env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"})",
+          "legendFormat": "expected {{run_id}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Attempt Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "max by (run_id) (artillery_summaries{metric=\"http_response_time_p50\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"})",
+          "legendFormat": "p50 {{run_id}}",
+          "refId": "A"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "max by (run_id) (artillery_summaries{metric=\"http_response_time_p95\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"})",
+          "legendFormat": "p95 {{run_id}}",
+          "refId": "B"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "max by (run_id) (artillery_summaries{metric=\"http_response_time_p99\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"})",
+          "legendFormat": "p99 {{run_id}}",
+          "refId": "C"
+        }
+      ],
+      "title": "Latency Percentiles",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "sum(max_over_time(artillery_counters{metric=~\"http_codes_2[0-9][0-9]\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__range]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Successful Requests",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "sum(max_over_time(artillery_counters{metric=\"vusers_failed\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__range]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Failed Requests",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 2,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "100 * sum(max_over_time(artillery_counters{metric=\"vusers_failed\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__range])) / clamp_min(sum(max_over_time(artillery_counters{metric=\"http_requests\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__range])), 1)",
+          "refId": "A"
+        }
+      ],
+      "title": "Error Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 8
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "sum(max_over_time(artillery_counters{metric=\"http_requests\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__range]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Attempted Requests",
+      "type": "stat"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 14
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "sum(max_over_time(ticket_booking_loadtest_expected_requests{env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__range]))",
+          "refId": "A"
+        }
+      ],
+      "title": "Expected Requests",
+      "type": "stat"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 39,
+  "style": "dark",
+  "tags": [
+    "ticket-booking",
+    "load-test"
+  ],
+  "templating": {
+    "list": [
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "definition": "label_values(artillery_counters{env=\"aws-eks\"}, scenario)",
+        "includeAll": true,
+        "label": "Scenario",
+        "multi": true,
+        "name": "scenario",
+        "options": [],
+        "query": "label_values(artillery_counters{env=\"aws-eks\"}, scenario)",
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": "$__all"
+        },
+        "definition": "label_values(artillery_counters{env=\"aws-eks\", scenario=~\"${scenario:regex}\"}, run_id)",
+        "includeAll": true,
+        "label": "Run ID",
+        "multi": true,
+        "name": "run_id",
+        "options": [],
+        "query": "label_values(artillery_counters{env=\"aws-eks\", scenario=~\"${scenario:regex}\"}, run_id)",
+        "refresh": 2,
+        "regex": "",
+        "sort": 3,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Load Test Overview",
+  "uid": "ticket-booking-load-test-overview",
+  "version": 2,
+  "weekStart": ""
+}

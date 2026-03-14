@@ -1,0 +1,46 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: monitoring
+
+resources:
+  - booking-service-servicemonitor.yml
+  - fake-services-servicemonitor.yml
+  - pushgateway-servicemonitor.yml
+  - rabbitmq-servicemonitor.yml
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+configMapGenerator:
+  - name: grafana-dashboard-load-test-overview
+    files:
+      - load-test-overview.json=dashboards/load-test-overview.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Load Testing"
+  - name: grafana-dashboard-workload-resources
+    files:
+      - workload-resources.json=dashboards/workload-resources.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Load Testing"
+  - name: grafana-dashboard-cluster-pressure
+    files:
+      - cluster-pressure.json=dashboards/cluster-pressure.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Load Testing"
+  - name: grafana-dashboard-application-bottlenecks
+    files:
+      - application-bottlenecks.json=dashboards/application-bottlenecks.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: "Load Testing"

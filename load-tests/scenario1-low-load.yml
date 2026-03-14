@@ -1,5 +1,14 @@
 config:
   target: "http://a724c736bdfbf4e42875d8f1e19c5069-710728609.us-east-1.elb.amazonaws.com"
+  plugins:
+    publish-metrics:
+      - type: prometheus
+        pushgateway: "{{ $env.PUSHGATEWAY_URL }}"
+        tags:
+          - "run_id:{{ $env.RUN_ID }}"
+          - "scenario:low-load"
+          - "env:aws-eks"
+          - "git_sha:{{ $env.GIT_SHA }}"
   phases:
     - duration: 60
       arrivalRate: 3

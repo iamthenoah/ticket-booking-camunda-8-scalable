@@ -1,0 +1,22 @@
+{
+  "name": "ticket-booking-camunda-8-scalable",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Load testing and monitoring helpers for the ticket booking Camunda 8 example",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "monitoring:install": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\monitoring\\install-monitoring.ps1",
+    "monitoring:port-forward": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\monitoring\\port-forward-monitoring.ps1",
+    "monitoring:stop-port-forwards": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\monitoring\\stop-port-forwards.ps1",
+    "monitoring:export-grafana-state": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\monitoring\\export-grafana-state.ps1",
+    "monitoring:import-grafana-state": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\monitoring\\import-grafana-state.ps1",
+    "load:test:low": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\load-tests\\run-load-test.ps1 -Scenario low-load",
+    "load:test:medium": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\load-tests\\run-load-test.ps1 -Scenario medium-load",
+    "load:test:peak": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\load-tests\\run-load-test.ps1 -Scenario peak-load"
+  },
+  "devDependencies": {
+    "artillery": "2.0.30"
+  }
+}

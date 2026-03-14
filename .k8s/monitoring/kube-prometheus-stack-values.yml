@@ -1,0 +1,73 @@
+fullnameOverride: monitoring-stack
+
+alertmanager:
+  enabled: false
+
+grafana:
+  service:
+    type: ClusterIP
+  grafana.ini:
+    dashboards:
+      min_refresh_interval: 15s
+    users:
+      viewers_can_edit: false
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
+      folderAnnotation: grafana_folder
+    datasources:
+      enabled: true
+      label: grafana_datasource
+      labelValue: "1"
+      searchNamespace: ALL
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+prometheus:
+  service:
+    type: ClusterIP
+  prometheusSpec:
+    retention: 15d
+    retentionSize: 8GB
+    resources:
+      requests:
+        cpu: 250m
+        memory: 1Gi
+      limits:
+        cpu: 1
+        memory: 2Gi
+
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
