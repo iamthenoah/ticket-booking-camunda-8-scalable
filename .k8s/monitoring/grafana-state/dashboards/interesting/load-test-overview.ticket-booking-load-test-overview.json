@@ -1,0 +1,446 @@
+{
+    "meta":  {
+                 "type":  "db",
+                 "canSave":  true,
+                 "canEdit":  true,
+                 "canAdmin":  true,
+                 "canStar":  true,
+                 "canDelete":  true,
+                 "slug":  "load-test-overview",
+                 "url":  "/d/ticket-booking-load-test-overview/load-test-overview",
+                 "expires":  "0001-01-01T00:00:00Z",
+                 "created":  "2026-03-14T16:29:08Z",
+                 "updated":  "2026-03-14T16:39:23Z",
+                 "updatedBy":  "admin",
+                 "createdBy":  "Anonymous",
+                 "version":  2,
+                 "hasAcl":  false,
+                 "isFolder":  false,
+                 "apiVersion":  "v0alpha1",
+                 "folderId":  31,
+                 "folderUid":  "afg0ccxf2uarka",
+                 "folderTitle":  "Interesting",
+                 "folderUrl":  "/dashboards/f/afg0ccxf2uarka/interesting",
+                 "provisioned":  true,
+                 "provisionedExternalId":  "Load Testing/load-test-overview.json",
+                 "annotationsPermissions":  {
+                                                "dashboard":  {
+                                                                  "canAdd":  true,
+                                                                  "canEdit":  true,
+                                                                  "canDelete":  true
+                                                              },
+                                                "organization":  {
+                                                                     "canAdd":  true,
+                                                                     "canEdit":  true,
+                                                                     "canDelete":  true
+                                                                 }
+                                            }
+             },
+    "dashboard":  {
+                      "annotations":  {
+                                          "list":  [
+                                                       {
+                                                           "builtIn":  1,
+                                                           "datasource":  {
+                                                                              "type":  "grafana",
+                                                                              "uid":  "-- Grafana --"
+                                                                          },
+                                                           "enable":  true,
+                                                           "hide":  true,
+                                                           "iconColor":  "rgba(0, 211, 255, 1)",
+                                                           "name":  "Annotations \u0026 Alerts",
+                                                           "type":  "dashboard"
+                                                       }
+                                                   ]
+                                      },
+                      "editable":  true,
+                      "fiscalYearStartMonth":  0,
+                      "graphTooltip":  0,
+                      "id":  9,
+                      "links":  [
+
+                                ],
+                      "liveNow":  false,
+                      "panels":  [
+                                     {
+                                         "datasource":  "Prometheus",
+                                         "fieldConfig":  {
+                                                             "defaults":  {
+                                                                              "color":  {
+                                                                                            "mode":  "palette-classic"
+                                                                                        },
+                                                                              "unit":  "reqps"
+                                                                          },
+                                                             "overrides":  [
+
+                                                                           ]
+                                                         },
+                                         "gridPos":  {
+                                                         "h":  8,
+                                                         "w":  12,
+                                                         "x":  0,
+                                                         "y":  0
+                                                     },
+                                         "id":  1,
+                                         "options":  {
+                                                         "legend":  {
+                                                                        "displayMode":  "list",
+                                                                        "placement":  "bottom"
+                                                                    },
+                                                         "tooltip":  {
+                                                                         "mode":  "multi",
+                                                                         "sort":  "none"
+                                                                     }
+                                                     },
+                                         "targets":  [
+                                                         {
+                                                             "datasource":  "Prometheus",
+                                                             "expr":  "sum by (run_id) (rate(artillery_counters{metric=\"http_requests\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__rate_interval]))",
+                                                             "legendFormat":  "{{run_id}}",
+                                                             "refId":  "A"
+                                                         }
+                                                     ],
+                                         "title":  "Request Rate",
+                                         "type":  "timeseries"
+                                     },
+                                     {
+                                         "datasource":  "Prometheus",
+                                         "fieldConfig":  {
+                                                             "defaults":  {
+                                                                              "color":  {
+                                                                                            "mode":  "palette-classic"
+                                                                                        },
+                                                                              "unit":  "ms"
+                                                                          },
+                                                             "overrides":  [
+
+                                                                           ]
+                                                         },
+                                         "gridPos":  {
+                                                         "h":  8,
+                                                         "w":  12,
+                                                         "x":  12,
+                                                         "y":  0
+                                                     },
+                                         "id":  2,
+                                         "options":  {
+                                                         "legend":  {
+                                                                        "displayMode":  "list",
+                                                                        "placement":  "bottom"
+                                                                    },
+                                                         "tooltip":  {
+                                                                         "mode":  "multi",
+                                                                         "sort":  "none"
+                                                                     }
+                                                     },
+                                         "targets":  [
+                                                         {
+                                                             "datasource":  "Prometheus",
+                                                             "expr":  "max by (run_id) (artillery_summaries{metric=\"http_response_time_p50\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"})",
+                                                             "legendFormat":  "p50 {{run_id}}",
+                                                             "refId":  "A"
+                                                         },
+                                                         {
+                                                             "datasource":  "Prometheus",
+                                                             "expr":  "max by (run_id) (artillery_summaries{metric=\"http_response_time_p95\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"})",
+                                                             "legendFormat":  "p95 {{run_id}}",
+                                                             "refId":  "B"
+                                                         },
+                                                         {
+                                                             "datasource":  "Prometheus",
+                                                             "expr":  "max by (run_id) (artillery_summaries{metric=\"http_response_time_p99\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"})",
+                                                             "legendFormat":  "p99 {{run_id}}",
+                                                             "refId":  "C"
+                                                         }
+                                                     ],
+                                         "title":  "Latency Percentiles",
+                                         "type":  "timeseries"
+                                     },
+                                     {
+                                         "datasource":  "Prometheus",
+                                         "fieldConfig":  {
+                                                             "defaults":  {
+                                                                              "color":  {
+                                                                                            "mode":  "thresholds"
+                                                                                        },
+                                                                              "thresholds":  {
+                                                                                                 "mode":  "absolute",
+                                                                                                 "steps":  [
+                                                                                                               {
+                                                                                                                   "color":  "green"
+                                                                                                               }
+                                                                                                           ]
+                                                                                             },
+                                                                              "unit":  "none"
+                                                                          },
+                                                             "overrides":  [
+
+                                                                           ]
+                                                         },
+                                         "gridPos":  {
+                                                         "h":  6,
+                                                         "w":  6,
+                                                         "x":  0,
+                                                         "y":  8
+                                                     },
+                                         "id":  3,
+                                         "options":  {
+                                                         "colorMode":  "value",
+                                                         "graphMode":  "none",
+                                                         "justifyMode":  "center",
+                                                         "orientation":  "auto",
+                                                         "reduceOptions":  {
+                                                                               "calcs":  [
+                                                                                             "lastNotNull"
+                                                                                         ],
+                                                                               "fields":  "",
+                                                                               "values":  false
+                                                                           },
+                                                         "textMode":  "value"
+                                                     },
+                                         "targets":  [
+                                                         {
+                                                             "datasource":  "Prometheus",
+                                                             "expr":  "sum(increase(artillery_counters{metric=~\"http_codes_2[0-9][0-9]\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__range]))",
+                                                             "refId":  "A"
+                                                         }
+                                                     ],
+                                         "title":  "Successful Responses",
+                                         "type":  "stat"
+                                     },
+                                     {
+                                         "datasource":  "Prometheus",
+                                         "fieldConfig":  {
+                                                             "defaults":  {
+                                                                              "color":  {
+                                                                                            "mode":  "thresholds"
+                                                                                        },
+                                                                              "thresholds":  {
+                                                                                                 "mode":  "absolute",
+                                                                                                 "steps":  [
+                                                                                                               {
+                                                                                                                   "color":  "green"
+                                                                                                               },
+                                                                                                               {
+                                                                                                                   "color":  "red",
+                                                                                                                   "value":  1
+                                                                                                               }
+                                                                                                           ]
+                                                                                             },
+                                                                              "unit":  "none"
+                                                                          },
+                                                             "overrides":  [
+
+                                                                           ]
+                                                         },
+                                         "gridPos":  {
+                                                         "h":  6,
+                                                         "w":  6,
+                                                         "x":  6,
+                                                         "y":  8
+                                                     },
+                                         "id":  4,
+                                         "options":  {
+                                                         "colorMode":  "value",
+                                                         "graphMode":  "none",
+                                                         "justifyMode":  "center",
+                                                         "orientation":  "auto",
+                                                         "reduceOptions":  {
+                                                                               "calcs":  [
+                                                                                             "lastNotNull"
+                                                                                         ],
+                                                                               "fields":  "",
+                                                                               "values":  false
+                                                                           },
+                                                         "textMode":  "value"
+                                                     },
+                                         "targets":  [
+                                                         {
+                                                             "datasource":  "Prometheus",
+                                                             "expr":  "sum(increase(artillery_counters{metric=~\"http_codes_[45][0-9][0-9]\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__range]))",
+                                                             "refId":  "A"
+                                                         }
+                                                     ],
+                                         "title":  "Failed Responses",
+                                         "type":  "stat"
+                                     },
+                                     {
+                                         "datasource":  "Prometheus",
+                                         "fieldConfig":  {
+                                                             "defaults":  {
+                                                                              "color":  {
+                                                                                            "mode":  "thresholds"
+                                                                                        },
+                                                                              "decimals":  2,
+                                                                              "thresholds":  {
+                                                                                                 "mode":  "absolute",
+                                                                                                 "steps":  [
+                                                                                                               {
+                                                                                                                   "color":  "green"
+                                                                                                               },
+                                                                                                               {
+                                                                                                                   "color":  "yellow",
+                                                                                                                   "value":  1
+                                                                                                               },
+                                                                                                               {
+                                                                                                                   "color":  "red",
+                                                                                                                   "value":  5
+                                                                                                               }
+                                                                                                           ]
+                                                                                             },
+                                                                              "unit":  "percent"
+                                                                          },
+                                                             "overrides":  [
+
+                                                                           ]
+                                                         },
+                                         "gridPos":  {
+                                                         "h":  6,
+                                                         "w":  6,
+                                                         "x":  12,
+                                                         "y":  8
+                                                     },
+                                         "id":  5,
+                                         "options":  {
+                                                         "colorMode":  "value",
+                                                         "graphMode":  "none",
+                                                         "justifyMode":  "center",
+                                                         "orientation":  "auto",
+                                                         "reduceOptions":  {
+                                                                               "calcs":  [
+                                                                                             "lastNotNull"
+                                                                                         ],
+                                                                               "fields":  "",
+                                                                               "values":  false
+                                                                           },
+                                                         "textMode":  "value"
+                                                     },
+                                         "targets":  [
+                                                         {
+                                                             "datasource":  "Prometheus",
+                                                             "expr":  "100 * sum(rate(artillery_counters{metric=~\"http_codes_[45][0-9][0-9]\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__rate_interval])) / clamp_min(sum(rate(artillery_counters{metric=\"http_responses\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__rate_interval])), 0.0001)",
+                                                             "refId":  "A"
+                                                         }
+                                                     ],
+                                         "title":  "Error Rate",
+                                         "type":  "stat"
+                                     },
+                                     {
+                                         "datasource":  "Prometheus",
+                                         "fieldConfig":  {
+                                                             "defaults":  {
+                                                                              "color":  {
+                                                                                            "mode":  "thresholds"
+                                                                                        },
+                                                                              "thresholds":  {
+                                                                                                 "mode":  "absolute",
+                                                                                                 "steps":  [
+                                                                                                               {
+                                                                                                                   "color":  "green"
+                                                                                                               }
+                                                                                                           ]
+                                                                                             },
+                                                                              "unit":  "none"
+                                                                          },
+                                                             "overrides":  [
+
+                                                                           ]
+                                                         },
+                                         "gridPos":  {
+                                                         "h":  6,
+                                                         "w":  6,
+                                                         "x":  18,
+                                                         "y":  8
+                                                     },
+                                         "id":  6,
+                                         "options":  {
+                                                         "colorMode":  "value",
+                                                         "graphMode":  "none",
+                                                         "justifyMode":  "center",
+                                                         "orientation":  "auto",
+                                                         "reduceOptions":  {
+                                                                               "calcs":  [
+                                                                                             "lastNotNull"
+                                                                                         ],
+                                                                               "fields":  "",
+                                                                               "values":  false
+                                                                           },
+                                                         "textMode":  "value"
+                                                     },
+                                         "targets":  [
+                                                         {
+                                                             "datasource":  "Prometheus",
+                                                             "expr":  "sum(increase(artillery_counters{metric=\"http_requests\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"}[$__range]))",
+                                                             "refId":  "A"
+                                                         }
+                                                     ],
+                                         "title":  "Total Requests",
+                                         "type":  "stat"
+                                     }
+                                 ],
+                      "refresh":  "30s",
+                      "schemaVersion":  42,
+                      "tags":  [
+                                   "ticket-booking",
+                                   "load-test"
+                               ],
+                      "templating":  {
+                                         "list":  [
+                                                      {
+                                                          "allValue":  ".*",
+                                                          "current":  {
+                                                                          "selected":  true,
+                                                                          "text":  "All",
+                                                                          "value":  "$__all"
+                                                                      },
+                                                          "definition":  "label_values(artillery_counters{env=\"aws-eks\"}, scenario)",
+                                                          "includeAll":  true,
+                                                          "label":  "Scenario",
+                                                          "multi":  true,
+                                                          "name":  "scenario",
+                                                          "options":  [
+
+                                                                      ],
+                                                          "query":  "label_values(artillery_counters{env=\"aws-eks\"}, scenario)",
+                                                          "refresh":  2,
+                                                          "regex":  "",
+                                                          "sort":  1,
+                                                          "type":  "query"
+                                                      },
+                                                      {
+                                                          "allValue":  ".*",
+                                                          "current":  {
+                                                                          "selected":  true,
+                                                                          "text":  "All",
+                                                                          "value":  "$__all"
+                                                                      },
+                                                          "definition":  "label_values(artillery_counters{env=\"aws-eks\", scenario=~\"${scenario:regex}\"}, run_id)",
+                                                          "includeAll":  true,
+                                                          "label":  "Run ID",
+                                                          "multi":  true,
+                                                          "name":  "run_id",
+                                                          "options":  [
+
+                                                                      ],
+                                                          "query":  "label_values(artillery_counters{env=\"aws-eks\", scenario=~\"${scenario:regex}\"}, run_id)",
+                                                          "refresh":  2,
+                                                          "regex":  "",
+                                                          "sort":  3,
+                                                          "type":  "query"
+                                                      }
+                                                  ]
+                                     },
+                      "time":  {
+                                   "from":  "now-6h",
+                                   "to":  "now"
+                               },
+                      "timepicker":  {
+
+                                     },
+                      "timezone":  "browser",
+                      "title":  "Load Test Overview",
+                      "uid":  "ticket-booking-load-test-overview",
+                      "version":  2,
+                      "weekStart":  ""
+                  }
+}

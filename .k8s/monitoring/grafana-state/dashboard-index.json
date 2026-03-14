@@ -1,0 +1,498 @@
+[
+    {
+        "id":  14,
+        "uid":  "ticket-booking-cluster-pressure",
+        "orgId":  1,
+        "title":  "Cluster Pressure",
+        "uri":  "db/cluster-pressure",
+        "url":  "/d/ticket-booking-cluster-pressure/cluster-pressure",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "cluster",
+                     "ticket-booking"
+                 ],
+        "isStarred":  false,
+        "folderId":  31,
+        "folderUid":  "afg0ccxf2uarka",
+        "folderTitle":  "Interesting",
+        "folderUrl":  "/dashboards/f/afg0ccxf2uarka/interesting",
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  18,
+        "uid":  "vkQ0UHxik",
+        "orgId":  1,
+        "title":  "CoreDNS",
+        "uri":  "db/coredns",
+        "url":  "/d/vkQ0UHxik/coredns",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "coredns",
+                     "dns"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  1,
+        "uid":  "c2f4e12cdf69feb95caa41a5a1b423d9",
+        "orgId":  1,
+        "title":  "etcd",
+        "uri":  "db/etcd",
+        "url":  "/d/c2f4e12cdf69feb95caa41a5a1b423d9/etcd",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "etcd-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  2,
+        "uid":  "6be0s85Mk",
+        "orgId":  1,
+        "title":  "Grafana Overview",
+        "uri":  "db/grafana-overview",
+        "url":  "/d/6be0s85Mk/grafana-overview",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  16,
+        "uid":  "09ec8aa1e996d6ffcd6817bbaff4db1b",
+        "orgId":  1,
+        "title":  "Kubernetes / API server",
+        "uri":  "db/kubernetes-api-server",
+        "url":  "/d/09ec8aa1e996d6ffcd6817bbaff4db1b/kubernetes-api-server",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  3,
+        "uid":  "b59e6c9f2fcbe2e16d77fc492374cc4f",
+        "orgId":  1,
+        "title":  "Kubernetes / Compute Resources /  Multi-Cluster",
+        "uri":  "db/kubernetes-compute-resources-multi-cluster",
+        "url":  "/d/b59e6c9f2fcbe2e16d77fc492374cc4f/kubernetes-compute-resources-multi-cluster",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  19,
+        "uid":  "efa86fd1d0c121a26444b636a3f509a8",
+        "orgId":  1,
+        "title":  "Kubernetes / Compute Resources / Cluster",
+        "uri":  "db/kubernetes-compute-resources-cluster",
+        "url":  "/d/efa86fd1d0c121a26444b636a3f509a8/kubernetes-compute-resources-cluster",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  11,
+        "uid":  "85a562078cdf77779eaa1add43ccec1e",
+        "orgId":  1,
+        "title":  "Kubernetes / Compute Resources / Namespace (Pods)",
+        "uri":  "db/kubernetes-compute-resources-namespace-pods",
+        "url":  "/d/85a562078cdf77779eaa1add43ccec1e/kubernetes-compute-resources-namespace-pods",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  5,
+        "uid":  "a87fb0d919ec0ea5f6543124e16c42a5",
+        "orgId":  1,
+        "title":  "Kubernetes / Compute Resources / Namespace (Workloads)",
+        "uri":  "db/kubernetes-compute-resources-namespace-workloads",
+        "url":  "/d/a87fb0d919ec0ea5f6543124e16c42a5/kubernetes-compute-resources-namespace-workloads",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  12,
+        "uid":  "200ac8fdbfbb74b39aff88118e4d1c2c",
+        "orgId":  1,
+        "title":  "Kubernetes / Compute Resources / Node (Pods)",
+        "uri":  "db/kubernetes-compute-resources-node-pods",
+        "url":  "/d/200ac8fdbfbb74b39aff88118e4d1c2c/kubernetes-compute-resources-node-pods",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  20,
+        "uid":  "6581e46e4e5c7ba40a07646395ef7b23",
+        "orgId":  1,
+        "title":  "Kubernetes / Compute Resources / Pod",
+        "uri":  "db/kubernetes-compute-resources-pod",
+        "url":  "/d/6581e46e4e5c7ba40a07646395ef7b23/kubernetes-compute-resources-pod",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  13,
+        "uid":  "a164a7f0339f99e89cea5cb47e9be617",
+        "orgId":  1,
+        "title":  "Kubernetes / Compute Resources / Workload",
+        "uri":  "db/kubernetes-compute-resources-workload",
+        "url":  "/d/a164a7f0339f99e89cea5cb47e9be617/kubernetes-compute-resources-workload",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  10,
+        "uid":  "72e0e05bef5099e5f049b05fdc429ed4",
+        "orgId":  1,
+        "title":  "Kubernetes / Controller Manager",
+        "uri":  "db/kubernetes-controller-manager",
+        "url":  "/d/72e0e05bef5099e5f049b05fdc429ed4/kubernetes-controller-manager",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  21,
+        "uid":  "3138fa155d5915769fbded898ac09fd9",
+        "orgId":  1,
+        "title":  "Kubernetes / Kubelet",
+        "uri":  "db/kubernetes-kubelet",
+        "url":  "/d/3138fa155d5915769fbded898ac09fd9/kubernetes-kubelet",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  17,
+        "uid":  "ff635a025bcfea7bc3dd4f508990a3e9",
+        "orgId":  1,
+        "title":  "Kubernetes / Networking / Cluster",
+        "uri":  "db/kubernetes-networking-cluster",
+        "url":  "/d/ff635a025bcfea7bc3dd4f508990a3e9/kubernetes-networking-cluster",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  26,
+        "uid":  "8b7a8b326d7a6f1f04244066368c67af",
+        "orgId":  1,
+        "title":  "Kubernetes / Networking / Namespace (Pods)",
+        "uri":  "db/kubernetes-networking-namespace-pods",
+        "url":  "/d/8b7a8b326d7a6f1f04244066368c67af/kubernetes-networking-namespace-pods",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  6,
+        "uid":  "bbb2a765a623ae38130206c7d94a160f",
+        "orgId":  1,
+        "title":  "Kubernetes / Networking / Namespace (Workload)",
+        "uri":  "db/kubernetes-networking-namespace-workload",
+        "url":  "/d/bbb2a765a623ae38130206c7d94a160f/kubernetes-networking-namespace-workload",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  24,
+        "uid":  "7a18067ce943a40ae25454675c19ff5c",
+        "orgId":  1,
+        "title":  "Kubernetes / Networking / Pod",
+        "uri":  "db/kubernetes-networking-pod",
+        "url":  "/d/7a18067ce943a40ae25454675c19ff5c/kubernetes-networking-pod",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  27,
+        "uid":  "728bf77cc1166d2f3133bf25846876cc",
+        "orgId":  1,
+        "title":  "Kubernetes / Networking / Workload",
+        "uri":  "db/kubernetes-networking-workload",
+        "url":  "/d/728bf77cc1166d2f3133bf25846876cc/kubernetes-networking-workload",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  23,
+        "uid":  "919b92a8e8041bd567af9edab12c840c",
+        "orgId":  1,
+        "title":  "Kubernetes / Persistent Volumes",
+        "uri":  "db/kubernetes-persistent-volumes",
+        "url":  "/d/919b92a8e8041bd567af9edab12c840c/kubernetes-persistent-volumes",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  4,
+        "uid":  "632e265de029684c40b21cb76bca4f94",
+        "orgId":  1,
+        "title":  "Kubernetes / Proxy",
+        "uri":  "db/kubernetes-proxy",
+        "url":  "/d/632e265de029684c40b21cb76bca4f94/kubernetes-proxy",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  25,
+        "uid":  "2e6b6a3b4bddf1427b3a55aa1311c656",
+        "orgId":  1,
+        "title":  "Kubernetes / Scheduler",
+        "uri":  "db/kubernetes-scheduler",
+        "url":  "/d/2e6b6a3b4bddf1427b3a55aa1311c656/kubernetes-scheduler",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "kubernetes-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  9,
+        "uid":  "ticket-booking-load-test-overview",
+        "orgId":  1,
+        "title":  "Load Test Overview",
+        "uri":  "db/load-test-overview",
+        "url":  "/d/ticket-booking-load-test-overview/load-test-overview",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "load-test",
+                     "ticket-booking"
+                 ],
+        "isStarred":  false,
+        "folderId":  31,
+        "folderUid":  "afg0ccxf2uarka",
+        "folderTitle":  "Interesting",
+        "folderUrl":  "/dashboards/f/afg0ccxf2uarka/interesting",
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  30,
+        "uid":  "7e0a61e486f727d763fb1d86fdd629c2",
+        "orgId":  1,
+        "title":  "Node Exporter / AIX",
+        "uri":  "db/node-exporter-aix",
+        "url":  "/d/7e0a61e486f727d763fb1d86fdd629c2/node-exporter-aix",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "node-exporter-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  22,
+        "uid":  "629701ea43bf69291922ea45f4a87d37",
+        "orgId":  1,
+        "title":  "Node Exporter / MacOS",
+        "uri":  "db/node-exporter-macos",
+        "url":  "/d/629701ea43bf69291922ea45f4a87d37/node-exporter-macos",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "node-exporter-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  7,
+        "uid":  "7d57716318ee0dddbac5a7f451fb7753",
+        "orgId":  1,
+        "title":  "Node Exporter / Nodes",
+        "uri":  "db/node-exporter-nodes",
+        "url":  "/d/7d57716318ee0dddbac5a7f451fb7753/node-exporter-nodes",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "node-exporter-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  28,
+        "uid":  "3e97d1d02672cdd0861f4c97c64f89b2",
+        "orgId":  1,
+        "title":  "Node Exporter / USE Method / Cluster",
+        "uri":  "db/node-exporter-use-method-cluster",
+        "url":  "/d/3e97d1d02672cdd0861f4c97c64f89b2/node-exporter-use-method-cluster",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "node-exporter-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  29,
+        "uid":  "fac67cfbe174d3ef53eb473d73d9212f",
+        "orgId":  1,
+        "title":  "Node Exporter / USE Method / Node",
+        "uri":  "db/node-exporter-use-method-node",
+        "url":  "/d/fac67cfbe174d3ef53eb473d73d9212f/node-exporter-use-method-node",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "node-exporter-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  8,
+        "uid":  "9fa0d141-d019-4ad7-8bc5-42196ee308bd",
+        "orgId":  1,
+        "title":  "Prometheus / Overview",
+        "uri":  "db/prometheus-overview",
+        "url":  "/d/9fa0d141-d019-4ad7-8bc5-42196ee308bd/prometheus-overview",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "prometheus-mixin"
+                 ],
+        "isStarred":  false,
+        "sortMeta":  0,
+        "isDeleted":  false
+    },
+    {
+        "id":  15,
+        "uid":  "ticket-booking-workload-resources",
+        "orgId":  1,
+        "title":  "Workload Resources",
+        "uri":  "db/workload-resources",
+        "url":  "/d/ticket-booking-workload-resources/workload-resources",
+        "slug":  "",
+        "type":  "dash-db",
+        "tags":  [
+                     "resources",
+                     "ticket-booking"
+                 ],
+        "isStarred":  false,
+        "folderId":  31,
+        "folderUid":  "afg0ccxf2uarka",
+        "folderTitle":  "Interesting",
+        "folderUrl":  "/dashboards/f/afg0ccxf2uarka/interesting",
+        "sortMeta":  0,
+        "isDeleted":  false
+    }
+]

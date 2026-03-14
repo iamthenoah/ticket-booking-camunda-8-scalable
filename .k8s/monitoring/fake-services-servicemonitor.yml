@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: fake-services
+  namespace: monitoring
+  labels:
+    release: monitoring-stack
+spec:
+  selector:
+    matchLabels:
+      app: fake-services
+  namespaceSelector:
+    matchNames:
+      - ticket-booking
+  endpoints:
+    - port: http
+      path: /metrics
+      interval: 15s

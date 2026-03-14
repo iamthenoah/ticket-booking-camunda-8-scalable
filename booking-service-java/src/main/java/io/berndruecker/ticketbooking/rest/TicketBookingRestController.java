@@ -15,6 +15,7 @@ import org.springframework.web.server.ServerWebExchange;
 
 import io.berndruecker.ticketbooking.ProcessConstants;
 import io.berndruecker.ticketbooking.adapter.RetrievePaymentAdapter;
+import io.berndruecker.ticketbooking.observability.TicketBookingMetrics;
 import io.camunda.zeebe.client.ZeebeClient;
 import io.camunda.zeebe.client.api.ZeebeFuture;
 import io.camunda.zeebe.client.api.command.ClientStatusException;
@@ -26,13 +27,17 @@ import io.camunda.zeebe.spring.client.EnableZeebeClient;
 @EnableZeebeClient
 public class TicketBookingRestController {
 
-  private Logger logger = LoggerFactory.getLogger(RetrievePaymentAdapter.class);
+  private final Logger logger = LoggerFactory.getLogger(TicketBookingRestController.class);
 
   @Autowired
   private ZeebeClient client;
 
+  @Autowired
+  private TicketBookingMetrics metrics;
+
   @PutMapping("/ticket")
   public ResponseEntity<BookTicketResponse> bookTicket(ServerWebExchange exchange) {
+    TicketBookingMetrics.Observation requestObservation = metrics.startRequest();
     String simulateBookingFailure = exchange.getRequest().getQueryParams().getFirst("simulateBookingFailure");
     
     // This would be best generated even in the client to allow idempotency!
@@ -61,15 +66,20 @@ public class TicketBookingRestController {
       response.reservationId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_RESERVATION_ID);
       response.paymentConfirmationId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_PAYMENT_CONFIRMATION_ID);
       response.ticketId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_TICKET_ID);
-      
+
+      requestObservation.stop("success");
       return ResponseEntity.status(HttpStatus.OK).body(response);
     } catch (ClientStatusException ex) {
 
       // of course we can run into a timeout if the workflow does not finish
       // within that timeframe!
-      logger.error("Timeout on waiting for workflow"); //, ex);
+      requestObservation.stop("timeout");
+      logger.error("Timeout on waiting for workflow");
 
       return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    } catch (RuntimeException ex) {
+      requestObservation.stop("error");
+      throw ex;
     }
   }
   

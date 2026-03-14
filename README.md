@@ -66,3 +66,14 @@ Simulate failures by:
 curl -i -X PUT http://localhost:8080/ticket?simulateBookingFailure=seats
 curl -i -X PUT http://localhost:8080/ticket?simulateBookingFailure=ticket
 ```
+
+## Monitoring On EKS
+
+Phase 1 load-test monitoring for EKS lives in `.k8s/monitoring`.
+
+See `.k8s/monitoring/README.md` for:
+
+- Helm-based installation of Prometheus, Grafana, and Pushgateway
+- local `kubectl port-forward` access
+- load-test execution scripts with Grafana annotations
+- dashboard usage and fallback manual import steps

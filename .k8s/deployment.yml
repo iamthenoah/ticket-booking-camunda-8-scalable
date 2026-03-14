@@ -54,6 +54,8 @@ kind: Service
 metadata:
   name: booking-service
   namespace: ticket-booking
+  labels:
+    app: booking-service
 spec:
   type: LoadBalancer
   ports:
@@ -110,6 +112,8 @@ kind: Service
 metadata:
   name: fake-services
   namespace: ticket-booking
+  labels:
+    app: fake-services
 spec:
   type: ClusterIP
   ports:
@@ -138,11 +142,17 @@ spec:
       containers:
       - name: rabbitmq
         image: rabbitmq:3-management
+        command:
+        - sh
+        - -c
+        - rabbitmq-plugins enable --offline rabbitmq_prometheus && rabbitmq-server
         ports:
         - containerPort: 5672
           name: amqp
         - containerPort: 15672
           name: management
+        - containerPort: 15692
+          name: prometheus
         env:
         - name: RABBITMQ_DEFAULT_USER
           value: "guest"
@@ -162,6 +172,8 @@ kind: Service
 metadata:
   name: rabbitmq
   namespace: ticket-booking
+  labels:
+    app: rabbitmq
 spec:
   type: ClusterIP
   ports:
@@ -171,5 +183,8 @@ spec:
   - port: 15672
     targetPort: 15672
     name: management
+  - port: 15692
+    targetPort: 15692
+    name: prometheus
   selector:
     app: rabbitmq

@@ -1,0 +1,42 @@
+[
+    {
+        "id":  2,
+        "uid":  "alertmanager",
+        "orgId":  1,
+        "name":  "Alertmanager",
+        "type":  "alertmanager",
+        "typeName":  "Alertmanager",
+        "typeLogoUrl":  "public/plugins/alertmanager/img/logo.svg",
+        "access":  "proxy",
+        "url":  "http://monitoring-stack-alertmanager.monitoring:9093/",
+        "user":  "",
+        "database":  "",
+        "basicAuth":  false,
+        "isDefault":  false,
+        "jsonData":  {
+                         "handleGrafanaManagedAlerts":  false,
+                         "implementation":  "prometheus"
+                     },
+        "readOnly":  true
+    },
+    {
+        "id":  1,
+        "uid":  "prometheus",
+        "orgId":  1,
+        "name":  "Prometheus",
+        "type":  "prometheus",
+        "typeName":  "Prometheus",
+        "typeLogoUrl":  "public/plugins/prometheus/img/prometheus_logo.svg",
+        "access":  "proxy",
+        "url":  "http://monitoring-stack-prometheus.monitoring:9090/",
+        "user":  "",
+        "database":  "",
+        "basicAuth":  false,
+        "isDefault":  true,
+        "jsonData":  {
+                         "httpMethod":  "POST",
+                         "timeInterval":  "30s"
+                     },
+        "readOnly":  true
+    }
+]

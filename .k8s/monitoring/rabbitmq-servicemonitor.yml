@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rabbitmq
+  namespace: monitoring
+  labels:
+    release: monitoring-stack
+spec:
+  selector:
+    matchLabels:
+      app: rabbitmq
+  namespaceSelector:
+    matchNames:
+      - ticket-booking
+  endpoints:
+    - port: prometheus
+      path: /metrics/detailed
+      interval: 15s
+      params:
+        family:
+          - queue_coarse_metrics
+          - queue_delivery_metrics
+          - queue_exchange_metrics
