@@ -1,0 +1,29 @@
+config:
+  target: "http://a724c736bdfbf4e42875d8f1e19c5069-710728609.us-east-1.elb.amazonaws.com"
+  plugins:
+    publish-metrics:
+      - type: prometheus
+        pushgateway: "{{ $env.PUSHGATEWAY_URL }}"
+        tags:
+          - "run_id:{{ $env.RUN_ID }}"
+          - "scenario:ramp-load"
+          - "env:aws-eks"
+          - "git_sha:{{ $env.GIT_SHA }}"
+  phases:
+    - duration: 30
+      arrivalRate: 10
+      name: "Ramp stage 1 - 10 requests/second"
+    - duration: 30
+      arrivalRate: 20
+      name: "Ramp stage 2 - 20 requests/second"
+    - duration: 30
+      arrivalRate: 30
+      name: "Ramp stage 3 - 30 requests/second"
+    - duration: 30
+      arrivalRate: 40
+      name: "Ramp stage 4 - 40 requests/second"
+scenarios:
+  - name: "Book a ticket"
+    flow:
+      - put:
+          url: "/ticket"

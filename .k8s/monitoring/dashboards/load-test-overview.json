@@ -123,6 +123,51 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 18,
+        "x": 0,
+        "y": 14
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": "Prometheus",
+          "expr": "max by (run_id, metric) (artillery_counters{metric=~\"errors_.*\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"})",
+          "legendFormat": "{{metric}} {{run_id}}",
+          "refId": "A"
+        },
+        {
+          "datasource": "Prometheus",
+          "expr": "max by (run_id) (artillery_counters{metric=\"vusers_failed\", env=\"aws-eks\", scenario=~\"${scenario:regex}\", run_id=~\"${run_id:regex}\"})",
+          "legendFormat": "total_failed {{run_id}}",
+          "refId": "B"
+        }
+      ],
+      "title": "Errors Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "mode": "thresholds"
           },
           "thresholds": {
@@ -444,6 +489,6 @@
   "timezone": "browser",
   "title": "Load Test Overview",
   "uid": "ticket-booking-load-test-overview",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }

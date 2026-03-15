@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
   [Parameter(Mandatory = $true)]
-  [ValidateSet("low-load", "medium-load", "peak-load")]
+  [ValidateSet("low-load", "medium-load", "high-load", "medium-soak", "ramp-load", "burst-load", "edge-load", "peak-load")]
   [string]$Scenario,
   [string]$MonitoringNamespace = "monitoring",
   [int]$GrafanaLocalPort = 3000,
@@ -183,6 +183,11 @@ if (-not (Test-Path $resultsDirectory)) {
 $scenarioFiles = @{
   "low-load" = "load-tests\scenario1-low-load.yml"
   "medium-load" = "load-tests\scenario2-medium-load.yml"
+  "high-load" = "load-tests\scenario4-high-load.yml"
+  "medium-soak" = "load-tests\scenario5-medium-soak.yml"
+  "ramp-load" = "load-tests\scenario6-ramp-load.yml"
+  "burst-load" = "load-tests\scenario7-burst-load.yml"
+  "edge-load" = "load-tests\scenario8-edge-load.yml"
   "peak-load" = "load-tests\scenario3-peah-load.yml"
 }
 

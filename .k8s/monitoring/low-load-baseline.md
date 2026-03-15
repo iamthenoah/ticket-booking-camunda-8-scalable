@@ -120,3 +120,39 @@ Use this as the main low-load reference:
 - no sustained in-flight backlog
 - no cluster pressure
 - no clear bottleneck at low load
+
+## Follow-up low-load run after scaling booking-service to 3 replicas
+
+After the later infrastructure change that increased `booking-service` from `1` to `3` replicas, a new low-load rerun was inspected through the `Application Bottlenecks` and `Workload Resources` dashboards.
+
+What changed operationally:
+
+- `booking-service` replica count increased from `1` to `3`
+- `fake-services` remained at `1`
+- `rabbitmq` remained at `1`
+- the new `workflow_wait` Java-side metric was available
+
+What stayed the same:
+
+- low load still completed cleanly
+- there was no visible cluster pressure
+- there was still no meaningful RabbitMQ backlog
+- `fake-services` step latency stayed small
+
+What became clearer:
+
+- the new `workflow_wait` metric was the largest Java-side step even under low load
+- local Java work such as `payment_publish`, `payment_wait`, `payment_correlate`, and `ticket_http` remained much smaller
+- `fake-services` still looked light, so the main delay did not move downstream
+
+Interpretation:
+
+- scaling `booking-service` to `3` did not reveal a new bottleneck at low load
+- instead, it strengthened the earlier hypothesis that the dominant time in the request path is spent waiting for workflow completion
+- this does not mean low load is unhealthy; the run still looked stable
+- it does mean the most important latency component is now directly visible, and it sits in the synchronous workflow-completion path rather than in cluster pressure, RabbitMQ buildup, or fake-service processing
+
+Why this matters for the next medium-load comparison:
+
+- if `workflow_wait` rises sharply while the other Java and fake-service steps remain comparatively small, that is strong evidence that scaling improved concurrency headroom but did not remove the main architectural bottleneck
+- if, instead, one fake-service step starts rising materially after scaling `booking-service`, that would suggest the bottleneck shifted downstream

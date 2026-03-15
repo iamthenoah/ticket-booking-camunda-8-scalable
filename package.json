@@ -14,6 +14,11 @@
     "monitoring:import-grafana-state": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\monitoring\\import-grafana-state.ps1",
     "load:test:low": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\load-tests\\run-load-test.ps1 -Scenario low-load",
     "load:test:medium": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\load-tests\\run-load-test.ps1 -Scenario medium-load",
+    "load:test:high": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\load-tests\\run-load-test.ps1 -Scenario high-load",
+    "load:test:soak": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\load-tests\\run-load-test.ps1 -Scenario medium-soak",
+    "load:test:ramp": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\load-tests\\run-load-test.ps1 -Scenario ramp-load",
+    "load:test:burst": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\load-tests\\run-load-test.ps1 -Scenario burst-load",
+    "load:test:edge": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\load-tests\\run-load-test.ps1 -Scenario edge-load",
     "load:test:peak": "powershell -NoProfile -ExecutionPolicy Bypass -File .\\scripts\\load-tests\\run-load-test.ps1 -Scenario peak-load"
   },
   "devDependencies": {

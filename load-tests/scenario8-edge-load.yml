@@ -1,0 +1,23 @@
+config:
+  target: "http://a724c736bdfbf4e42875d8f1e19c5069-710728609.us-east-1.elb.amazonaws.com"
+  plugins:
+    publish-metrics:
+      - type: prometheus
+        pushgateway: "{{ $env.PUSHGATEWAY_URL }}"
+        tags:
+          - "run_id:{{ $env.RUN_ID }}"
+          - "scenario:edge-load"
+          - "env:aws-eks"
+          - "git_sha:{{ $env.GIT_SHA }}"
+  phases:
+    - duration: 60
+      arrivalRate: 20
+      name: "Edge baseline - 20 requests/second"
+    - duration: 30
+      arrivalRate: 25
+      name: "Edge threshold - 25 requests/second"
+scenarios:
+  - name: "Book a ticket"
+    flow:
+      - put:
+          url: "/ticket"

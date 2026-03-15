@@ -179,3 +179,128 @@ Interpretation:
   - rerun `medium-load` with the new direct `workflow_wait` metric in place
   - confirm whether `workflow_wait` becomes the dominant step under load
   - if confirmed, use that as the main architectural bottleneck in the report
+
+## Follow-up medium-load run after scaling booking-service to 3 replicas
+
+After the later infrastructure change that increased `booking-service` from `1` to `3` replicas, a new medium-load rerun was executed with the direct `workflow_wait` metric available.
+
+### Run metadata
+
+- Date: `2026-03-14`
+- Run ID: `20260314-224753-medium-load`
+- Scenario: `medium-load`
+- Scenario file: `load-tests/scenario2-medium-load.yml`
+- Intended load shape: `60s` at `14 req/s`
+- Primary result file: `load-tests/results/20260314-224753-medium-load.json`
+
+### Client-facing results
+
+From `load-tests/results/20260314-224753-medium-load.json`:
+
+- Total attempted requests: `840`
+- Expected requests: `840`
+- Successful requests: `840`
+- Failed requests: `0`
+- Error rate: `0%`
+- Observed request rate: `14 req/s`
+- Mean response time: `957.6 ms`
+- p50 response time: `907 ms`
+- p95 response time: `1495.5 ms`
+- p99 response time: `1755 ms`
+- Max response time: `2065 ms`
+- Mean session length: `1062.1 ms`
+- p95 session length: `1587.9 ms`
+- p99 session length: `1863.5 ms`
+
+### Comparison against the earlier medium-load run
+
+Earlier medium-load reference:
+
+- Successful requests: `105 / 840`
+- Failed requests: `735 / 840`
+- Error rate: `87.5%`
+- Mean response time: `5288.5 ms`
+- p95 response time: `9607.1 ms`
+- p99 response time: `9801.2 ms`
+
+Follow-up medium-load comparison:
+
+- Success-rate change: from `12.5%` success to `100%` success
+- Failure-rate change: from `87.5%` to `0%`
+- Mean latency change: from `5288.5 ms` to `957.6 ms`
+- p95 latency change: from `9607.1 ms` to `1495.5 ms`
+- p99 latency change: from `9801.2 ms` to `1755 ms`
+
+Interpretation:
+
+- scaling `booking-service` to `3` replicas materially changed the result
+- medium load became sustainable without changing business logic
+- the previous failure was therefore strongly tied to concurrency headroom in the synchronous request path rather than to hard cluster saturation
+
+### Application bottleneck observations
+
+Approximate values from the `Application Bottlenecks` dashboard during the run window:
+
+- Booking end-to-end latency stayed roughly around:
+  - p50: `~570-580 ms`
+  - p95: `~720-780 ms`
+  - p99: `~790-880 ms`
+- Booking outcomes stayed successful throughout the run window
+- In-flight bookings returned to `0` after the run; no sustained backlog was visible
+
+Java-side step timing:
+
+- `workflow_wait` was now directly visible and was clearly the dominant Java-side step
+- approximate `workflow_wait` range:
+  - p50: `~580 ms`
+  - p95: `~720-780 ms`
+- other Java-side steps remained much smaller:
+  - `payment_publish`: very small, roughly `~5-15 ms`
+  - `payment_correlate`: roughly `~80-100 ms`
+  - `payment_wait`: roughly `~100-160 ms`
+  - `ticket_http`: roughly `~10-15 ms`
+
+Fake-services timing:
+
+- `reserve_seats`: still the largest fake-service step, roughly `~75 ms` p50 and up to `~100-140 ms` p95
+- `payment_consume`: stayed low, roughly `~5-10 ms`
+- `ticket_http`: stayed low, roughly `~8-12 ms`
+
+RabbitMQ behavior:
+
+- `paymentRequest` queue depth did not build up
+- `paymentResponse` showed a short spike, peaking around `6`, but it was not sustained
+- no lasting publish/delivery imbalance was visible
+
+### Workload and cluster observations
+
+From the `Workload Resources` and `Cluster Pressure` dashboards:
+
+- `booking-service` now ran at `3` replicas and all `3` pods were active
+- booking-service pod CPU rose across all replicas, roughly into the `~0.07-0.10 cores` range per pod
+- `fake-services` CPU rose only modestly, roughly to `~0.045 cores`
+- `rabbitmq` remained low
+- memory increased somewhat across booking-service pods, but stayed moderate
+- node CPU rose, but still stayed far from cluster saturation
+- pending pods: `0`
+- restart rate by pod: `0`
+- OOMKilled containers: none observed
+
+### Bottleneck conclusion after scaling
+
+The new direct timing data makes the logic clearer than in the earlier medium-load run:
+
+1. Medium load is now fully successful.
+2. The largest measured Java-side step is `workflow_wait`.
+3. The other Java-side local steps are much smaller.
+4. Fake-services local steps remain relatively small.
+5. RabbitMQ shows only a brief, shallow queue spike rather than sustained backlog.
+6. The cluster is still healthy.
+
+Interpretation:
+
+- the dominant contributor to request time is now directly visible as `workflow_wait`
+- scaling `booking-service` to `3` replicas did not remove that architectural cost, but it gave enough concurrency headroom for the system to sustain medium load successfully
+- the main bottleneck hypothesis is therefore confirmed more directly:
+  - the key limiting path is the synchronous workflow-completion wait in `booking-service`
+- however, at `3` replicas, that bottleneck is no longer severe enough to break `medium-load`

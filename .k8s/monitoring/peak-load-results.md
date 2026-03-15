@@ -196,3 +196,139 @@ Interpretation:
 - What this adds beyond the medium-load result:
   - medium-load was enough to prove the system could not sustain the target throughput
   - peak-load confirms that pushing harder does not expose a different infrastructure bottleneck; it mainly amplifies the same application-path limitation into near-total failure
+
+## Follow-up peak-load run after scaling booking-service to 3 replicas
+
+After the later infrastructure change that increased `booking-service` from `1` to `3` replicas, a new peak-load rerun was executed with the direct `workflow_wait` metric available.
+
+### Run metadata
+
+- Date: `2026-03-14`
+- Run ID: `20260314-225825-peak-load`
+- Scenario: `peak-load`
+- Scenario file: `load-tests/scenario3-peah-load.yml`
+- Intended load shape: `60s` at `150 req/s`
+- Primary result file: `load-tests/results/20260314-225825-peak-load.json`
+
+### Client-facing results
+
+From `load-tests/results/20260314-225825-peak-load.json`:
+
+- Total attempted requests: `9000`
+- Expected requests: `9000`
+- Successful requests: `200`
+- Failed requests: `8800`
+- Error rate: `97.78%`
+- Aggregate observed request-rate metric: `128 req/s`
+- Mean response time: `5238.3 ms`
+- p50 response time: `5378.9 ms`
+- p95 response time: `9230.4 ms`
+- p99 response time: `9607.1 ms`
+- Max response time: `9755 ms`
+- Mean session length: `5342.1 ms`
+- p95 session length: `9416.8 ms`
+- p99 session length: `9801.2 ms`
+
+Failure type:
+
+- `8800` requests failed with `ETIMEDOUT`
+
+### Comparison against the earlier peak-load run
+
+Earlier peak-load reference:
+
+- Successful requests: `63 / 9000`
+- Failed requests: `8937 / 9000`
+- Error rate: `99.3%`
+- Failure types: `5892 ETIMEDOUT`, `3045 ECONNRESET`
+- Mean response time: `5246.6 ms`
+- p95 response time: `9230.4 ms`
+- p99 response time: `9607.1 ms`
+
+Follow-up peak-load comparison:
+
+- Success-rate change: from `0.7%` success to `2.22%` success
+- Failure-rate change: from `99.3%` to `97.78%`
+- Mean latency change for successful requests: effectively unchanged
+- p95 and p99 latency for successful requests: effectively unchanged
+- Failure-mode change:
+  - earlier peak-load mixed `ETIMEDOUT` and `ECONNRESET`
+  - follow-up peak-load still failed heavily, but primarily as `ETIMEDOUT`
+
+Interpretation:
+
+- scaling `booking-service` to `3` replicas helped somewhat at peak load, but not enough to make the scenario sustainable
+- the main effect was a modest increase in completions, not a meaningful reduction in successful-request latency
+- this suggests the same dominant bottleneck remains, but peak pressure still overwhelms the available concurrency headroom
+
+### Application bottleneck observations
+
+Approximate values from the `Application Bottlenecks` dashboard during the run window:
+
+- Booking end-to-end latency for successful request samples stayed roughly around:
+  - p50: `~600 ms`
+  - p95: `~950 ms`
+  - p99: `~1050 ms`
+- Booking outcomes over time only reflect the small stream of successful completions
+- In-flight bookings returned to `0` after the run
+
+Java-side timing:
+
+- `workflow_wait` was directly visible and was clearly the dominant Java-side step
+- approximate `workflow_wait` range:
+  - p50: `~600 ms`
+  - p95: `~950-1000 ms`
+- other Java-side steps remained much smaller:
+  - `payment_publish`: very small, roughly `~5-10 ms`
+  - `payment_correlate`: roughly `~90-110 ms`
+  - `payment_wait`: roughly `~170-190 ms`
+  - `ticket_http`: roughly `~10-15 ms`
+
+Fake-services timing:
+
+- `reserve_seats`: still the largest fake-service step, roughly `~75 ms` p50 and up to `~145 ms` p95
+- `payment_consume`: stayed low, roughly `~5-10 ms`
+- `ticket_http`: stayed low, roughly `~8-12 ms`
+
+RabbitMQ behavior:
+
+- `paymentRequest` queue depth stayed at `0`
+- `paymentResponse` showed brief spikes, peaking around `6`, then dropping again
+- no sustained queue growth was visible
+
+### Workload and cluster observations
+
+From the `Workload Resources` and `Cluster Pressure` dashboards:
+
+- `booking-service` ran at `3` replicas and all `3` pods were active
+- booking-service pod CPU rose across all replicas, roughly into the `~0.10-0.13 cores` range per pod
+- `fake-services` CPU rose materially as well, roughly to `~0.08 cores`
+- `rabbitmq` stayed comparatively low
+- booking-service pod memory rose into roughly the `~245-252 MiB` range
+- node CPU increased further than in the earlier peak run, with one node reaching roughly `~25%`
+- node memory also rose, but still without cluster distress
+- pending pods: `0`
+- restart rate by pod: `0`
+- OOMKilled containers: none observed
+
+### Bottleneck conclusion after scaling
+
+The new direct timing data makes the peak-load picture clearer:
+
+1. Peak load is still not sustainable.
+2. `workflow_wait` is the largest measured Java-side step.
+3. The other Java-side local steps remain much smaller.
+4. Fake-services gets busier, and `reserve_seats` rises somewhat, but still not enough to explain the full client-side collapse.
+5. RabbitMQ shows brief response-queue spikes, but not sustained backlog.
+6. The cluster still does not show an infrastructure failure pattern.
+
+Interpretation:
+
+- the main architectural bottleneck remains the synchronous workflow-completion wait in `booking-service`
+- scaling `booking-service` to `3` replicas improves peak-load throughput somewhat, but only modestly
+- peak load still overwhelms the current design, so the scenario remains dominated by timeout-heavy failure even though the same change was enough to make medium-load fully successful
+
+Important timing note:
+
+- there is still a large mismatch between client-observed successful-request latency in `Load Test Overview` (`~5-10s`) and the app-level successful-request timing visible in `Application Bottlenecks` (`~0.6-1.0s`)
+- that means the app-step panels are useful for bottleneck direction, but the Artillery JSON remains the source of truth for absolute client latency under heavy failure conditions
