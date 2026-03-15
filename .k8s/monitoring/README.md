@@ -93,7 +93,7 @@ What is not lost:
 
 - dashboard JSON files already committed under [`dashboards`](./dashboards)
 - Artillery result JSON files under `load-tests/results/`
-- notes you keep in repo files such as [`low-load-baseline.md`](./low-load-baseline.md)
+- notes you keep in repo files such as the written load-test notes in [`load-test-results/README.md`](./load-test-results/README.md)
 
 To preserve the current Grafana dashboard and folder configuration to local files, export it:
 
@@ -155,40 +155,7 @@ Results JSON files are written to `load-tests/results/`.
 
 ## Dashboards
 
-Provisioned dashboards:
-
-- `Load Test Overview`
-- `Workload Resources`
-- `Cluster Pressure`
-- `Application Bottlenecks`
-
-Use the `run_id` and `scenario` variables in `Load Test Overview` to compare multiple runs.
-
-Recommended refresh:
-
-- `30s` while a load test is running
-- manual refresh or `1m` after the run
-
-Simple workflow:
-
-1. Open `Load Test Overview` and filter to your `run_id`.
-2. Note the baseline:
-   - `180` requests
-   - `0` failures
-   - mean latency about `803 ms`
-   - `p95` about `1.38 s`
-   - `p99` about `2.23 s`
-3. Open `Workload Resources` for the same time window.
-4. See which workload's CPU and memory rose during the test.
-5. Open `Cluster Pressure` to confirm there were no pending pods, restarts, or node stress.
-6. Open `Application Bottlenecks` to see where time accumulates in the booking flow.
-
-Reading the charts:
-
-- Treat the Artillery console output and the JSON file in `load-tests/results/` as the source of truth for exact totals.
-- Treat Grafana as the source of truth for trends and correlation.
-- `Request Rate` and `Latency Percentiles` can show their first visible points at slightly different timestamps. `Request Rate` uses Prometheus `rate(...)` over a scrape window, so it needs multiple scrapes before a point appears. `Latency Percentiles` reads the pushed summary gauges directly, so it can show the early warm-up spike sooner.
-- The first latency spike in a run is often warm-up behavior rather than sustained steady-state performance.
+For the full user-friendly overview of implemented dashboards, support features, and planned observability improvements, see [monitoring-features.md](./monitoring-features.md).
 
 ## What you should see
 
@@ -237,4 +204,4 @@ If the datasource is missing, create it manually:
    - run `npm run load:test:peak`
    - correlate latency and errors with pod and node pressure
 
-For a written baseline reference, see [`low-load-baseline.md`](./low-load-baseline.md).
+For the written baseline and the collected run notes, see [`load-test-results/README.md`](./load-test-results/README.md).

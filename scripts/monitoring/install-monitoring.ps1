@@ -192,8 +192,8 @@ Assert-Command -Name "kubectl"
 $repoRoot = Get-RepoRoot
 $monitoringRoot = Join-Path $repoRoot ".k8s\monitoring"
 $runtimeRoot = Join-Path $monitoringRoot ".runtime"
-$kubePrometheusValuesPath = Join-Path $monitoringRoot "kube-prometheus-stack-values.yml"
-$pushgatewayValuesPath = Join-Path $monitoringRoot "prometheus-pushgateway-values.yml"
+$kubePrometheusValuesPath = Join-Path $monitoringRoot "helm-values\kube-prometheus-stack-values.yml"
+$pushgatewayValuesPath = Join-Path $monitoringRoot "helm-values\prometheus-pushgateway-values.yml"
 $usePersistence = -not $DisablePersistence
 $resolvedStorageClassName = $null
 

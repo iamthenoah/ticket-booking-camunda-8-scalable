@@ -3,10 +3,10 @@ kind: Kustomization
 namespace: monitoring
 
 resources:
-  - booking-service-servicemonitor.yml
-  - fake-services-servicemonitor.yml
-  - pushgateway-servicemonitor.yml
-  - rabbitmq-servicemonitor.yml
+  - servicemonitors/booking-service-servicemonitor.yml
+  - servicemonitors/fake-services-servicemonitor.yml
+  - servicemonitors/pushgateway-servicemonitor.yml
+  - servicemonitors/rabbitmq-servicemonitor.yml
 
 generatorOptions:
   disableNameSuffixHash: true

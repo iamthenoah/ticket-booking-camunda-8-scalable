@@ -1,6 +1,6 @@
 # Burst-Load Results
 
-This file records the current `burst-load` result and compares it against the scaled medium-load result in [medium-load-results.md](/c:/Programming/Study/ticket-booking-camunda-8-master/.k8s/monitoring/medium-load-results.md), the threshold-focused ramp result in [ramp-load-results.md](/c:/Programming/Study/ticket-booking-camunda-8-master/.k8s/monitoring/ramp-load-results.md), and the constant high-load result in [high-load-results.md](/c:/Programming/Study/ticket-booking-camunda-8-master/.k8s/monitoring/high-load-results.md).
+This file records the current `burst-load` result and compares it against the scaled medium-load result in [medium-load-results.md](./medium-load-results.md), the threshold-focused ramp result in [ramp-load-results.md](./ramp-load-results.md), and the constant high-load result in [high-load-results.md](./high-load-results.md).
 
 ## Run metadata
 

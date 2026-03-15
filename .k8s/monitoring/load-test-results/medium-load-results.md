@@ -1,6 +1,6 @@
 # Medium-Load Results
 
-This file records the current medium-load result and compares it against the low-load baseline in [low-load-baseline.md](/c:/Programming/Study/ticket-booking-camunda-8-master/.k8s/monitoring/low-load-baseline.md).
+This file records the current medium-load result and compares it against the low-load baseline in [low-load-baseline.md](./low-load-baseline.md).
 
 ## Run metadata
 

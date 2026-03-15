@@ -1,6 +1,6 @@
 # High-Load Results
 
-This file records the current `high-load` result and compares it against the low-load baseline in [low-load-baseline.md](/c:/Programming/Study/ticket-booking-camunda-8-master/.k8s/monitoring/low-load-baseline.md), the scaled medium-load result in [medium-load-results.md](/c:/Programming/Study/ticket-booking-camunda-8-master/.k8s/monitoring/medium-load-results.md), and the peak-load result in [peak-load-results.md](/c:/Programming/Study/ticket-booking-camunda-8-master/.k8s/monitoring/peak-load-results.md).
+This file records the current `high-load` result and compares it against the low-load baseline in [low-load-baseline.md](./low-load-baseline.md), the scaled medium-load result in [medium-load-results.md](./medium-load-results.md), and the peak-load result in [peak-load-results.md](./peak-load-results.md).
 
 ## Run metadata
 

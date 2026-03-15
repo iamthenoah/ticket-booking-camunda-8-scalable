@@ -1,6 +1,6 @@
 # Ramp-Load Results
 
-This file records the current `ramp-load` result and compares it against the stable scaled medium-load result in [medium-load-results.md](/c:/Programming/Study/ticket-booking-camunda-8-master/.k8s/monitoring/medium-load-results.md), the threshold-style high-load result in [high-load-results.md](/c:/Programming/Study/ticket-booking-camunda-8-master/.k8s/monitoring/high-load-results.md), and the peak-load result in [peak-load-results.md](/c:/Programming/Study/ticket-booking-camunda-8-master/.k8s/monitoring/peak-load-results.md).
+This file records the current `ramp-load` result and compares it against the stable scaled medium-load result in [medium-load-results.md](./medium-load-results.md), the threshold-style high-load result in [high-load-results.md](./high-load-results.md), and the peak-load result in [peak-load-results.md](./peak-load-results.md).
 
 ## Run metadata
 
