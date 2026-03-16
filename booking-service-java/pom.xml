@@ -15,6 +15,7 @@
 		<micrometer.version>1.9.5</micrometer.version>
 		<spring.boot.version>2.7.5</spring.boot.version>
 		<zeebe.version>8.1.16</zeebe.version>
+		<aws.sdk.version>2.20.56</aws.sdk.version>
 	</properties>
 
 	<dependencies>
@@ -42,6 +43,11 @@
 		    <groupId>io.camunda</groupId>
 		    <artifactId>spring-zeebe-starter</artifactId>
 		    <version>${zeebe.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>dynamodb</artifactId>
+			<version>${aws.sdk.version}</version>
 		</dependency>
 
 		<dependency>
