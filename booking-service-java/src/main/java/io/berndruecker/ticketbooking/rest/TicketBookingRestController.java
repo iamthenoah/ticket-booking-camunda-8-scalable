@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 
 import io.berndruecker.ticketbooking.ProcessConstants;
+import io.berndruecker.ticketbooking.adapter.AwsStorageService;
 import io.berndruecker.ticketbooking.adapter.RetrievePaymentAdapter;
 import io.berndruecker.ticketbooking.observability.TicketBookingMetrics;
 import io.camunda.zeebe.client.ZeebeClient;
@@ -34,6 +35,9 @@ public class TicketBookingRestController {
 
   @Autowired
   private TicketBookingMetrics metrics;
+
+  @Autowired(required = false)
+  private AwsStorageService awsStorage;
 
   @PutMapping("/ticket")
   public ResponseEntity<BookTicketResponse> bookTicket(ServerWebExchange exchange) {
@@ -67,6 +71,12 @@ public class TicketBookingRestController {
       response.reservationId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_RESERVATION_ID);
       response.paymentConfirmationId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_PAYMENT_CONFIRMATION_ID);
       response.ticketId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_TICKET_ID);
+
+      // Save to AWS
+      if (awsStorage != null) {
+        awsStorage.saveBooking(response.bookingReferenceId, response.reservationId, 
+            response.paymentConfirmationId, response.ticketId);
+      }
 
       workflowWaitObservation.stop("success");
       requestObservation.stop("success");
