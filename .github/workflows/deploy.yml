@@ -81,12 +81,18 @@ jobs:
           ZEEBE_CLIENT_CLOUD_CLUSTERID: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLUSTERID }}
           ZEEBE_CLIENT_CLOUD_CLIENTID: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLIENTID }}
           ZEEBE_CLIENT_CLOUD_CLIENTSECRET: ${{ secrets.ZEEBE_CLIENT_CLOUD_CLIENTSECRET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.NOAH_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.NOAH_AWS_SECRET_ACCESS_KEY }}
+          AWS_SESSION_TOKEN: ${{ secrets.NOAH_AWS_SESSION_TOKEN }}
         run: |
           docker build \
             --build-arg ZEEBE_CLIENT_CLOUD_REGION=$ZEEBE_CLIENT_CLOUD_REGION \
             --build-arg ZEEBE_CLIENT_CLOUD_CLUSTERID=$ZEEBE_CLIENT_CLOUD_CLUSTERID \
             --build-arg ZEEBE_CLIENT_CLOUD_CLIENTID=$ZEEBE_CLIENT_CLOUD_CLIENTID \
             --build-arg ZEEBE_CLIENT_CLOUD_CLIENTSECRET=$ZEEBE_CLIENT_CLOUD_CLIENTSECRET \
+            --build-arg AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+            --build-arg AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+            --build-arg AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN \
             -t $ECR_REGISTRY/ticket-booking-service:$IMAGE_TAG \
             -t $ECR_REGISTRY/ticket-booking-service:latest \
             ./booking-service-java
