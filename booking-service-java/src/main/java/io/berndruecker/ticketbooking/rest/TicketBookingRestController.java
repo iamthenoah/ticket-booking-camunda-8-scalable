@@ -75,14 +75,14 @@ public class TicketBookingRestController {
       response.ticketId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_TICKET_ID);
       logger.info("Booking data: reservationId={}, paymentConfirmationId={}, ticketId={}", response.reservationId, response.paymentConfirmationId, response.ticketId);
 
-      // Save to AWS
-      if (awsStorage != null) {
-        logger.info("Saving booking to database...");
-        awsStorage.saveBooking(response.bookingReferenceId, response.reservationId, 
-            response.paymentConfirmationId, response.ticketId);
-      } else {
-        logger.warn("AwsStorageService is null - database save skipped");
-      }
+      // // Save to AWS
+      // if (awsStorage != null) {
+      //   logger.info("Saving booking to database...");
+      //   awsStorage.saveBooking(response.bookingReferenceId, response.reservationId, 
+      //       response.paymentConfirmationId, response.ticketId);
+      // } else {
+      //   logger.warn("AwsStorageService is null - database save skipped");
+      // }
 
       workflowWaitObservation.stop("success");
       requestObservation.stop("success");
