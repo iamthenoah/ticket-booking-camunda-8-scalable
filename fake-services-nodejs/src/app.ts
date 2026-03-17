@@ -34,7 +34,7 @@ function reserveSeatsHandler(job: any) {
 			console.log('Successul :-)')
 			return job
 				.complete({
-					reservationId: '1234'
+					reservationId: uuidv4()
 				})
 				.then((ack: any) => {
 					observation.stop('success')
