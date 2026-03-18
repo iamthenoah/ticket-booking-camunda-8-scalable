@@ -42,6 +42,8 @@ spec:
           value: "ZEEBE_CLIENT_CLOUD_CLIENTSECRET_PLACEHOLDER"
         - name: ZEEBE_CLIENT_REQUESTTIMEOUT
           value: "PT60S"
+        - name: JAVA_TOOL_OPTIONS
+          value: "-Dreactor.netty.ioWorkerCount=32"
         - name: AWS_REGION
           value: "us-east-1"
         - name: AWS_ACCESS_KEY_ID
