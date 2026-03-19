@@ -134,9 +134,9 @@ jobs:
           ZEEBE_CLIENT_ID: ${{ secrets.ZEEBE_CLIENT_ID }}
           ZEEBE_CLIENT_SECRET: ${{ secrets.ZEEBE_CLIENT_SECRET }}
           ZEEBE_AUTHORIZATION_SERVER_URL: ${{ secrets.ZEEBE_AUTHORIZATION_SERVER_URL }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.NOAH_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.NOAH_AWS_SECRET_ACCESS_KEY }}
-          AWS_SESSION_TOKEN: ${{ secrets.NOAH_AWS_SESSION_TOKEN }}
+          RDS_HOST: ${{ secrets.RDS_HOST }}
+          RDS_USER: ${{ secrets.RDS_USER }}
+          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
         run: |
           set -euo pipefail
           ECR_REGISTRY=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
@@ -150,9 +150,9 @@ jobs:
               -e "s|ZEEBE_CLIENT_ID_PLACEHOLDER|$ZEEBE_CLIENT_ID|g" \
               -e "s|ZEEBE_CLIENT_SECRET_PLACEHOLDER|$ZEEBE_CLIENT_SECRET|g" \
               -e "s|ZEEBE_AUTHORIZATION_SERVER_URL_PLACEHOLDER|$ZEEBE_AUTHORIZATION_SERVER_URL|g" \
-              -e "s|AWS_ACCESS_KEY_ID_PLACEHOLDER|$AWS_ACCESS_KEY_ID|g" \
-              -e "s|AWS_SECRET_ACCESS_KEY_PLACEHOLDER|$AWS_SECRET_ACCESS_KEY|g" \
-              -e "s|AWS_SESSION_TOKEN_PLACEHOLDER|$AWS_SESSION_TOKEN|g" \
+              -e "s|RDS_HOST_PLACEHOLDER|$RDS_HOST|g" \
+              -e "s|RDS_USER_PLACEHOLDER|$RDS_USER|g" \
+              -e "s|RDS_PASSWORD_PLACEHOLDER|$RDS_PASSWORD|g" \
               .k8s/deployment.yml > rendered-deployment.yml
 
           kubectl apply -f rendered-deployment.yml

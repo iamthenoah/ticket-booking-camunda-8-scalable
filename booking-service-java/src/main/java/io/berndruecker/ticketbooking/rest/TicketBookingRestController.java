@@ -65,26 +65,34 @@ public class TicketBookingRestController {
           .send(); // with this we get a future
 
       // Block until it is really done
+      logger.info("Waiting for workflow to complete...");
       ProcessInstanceResult workflowInstanceResult = future.join();
+      logger.info("Workflow completed");
 
       // Unwrap data from workflow after it finished
       response.reservationId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_RESERVATION_ID);
       response.paymentConfirmationId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_PAYMENT_CONFIRMATION_ID);
       response.ticketId = (String) workflowInstanceResult.getVariablesAsMap().get(ProcessConstants.VAR_TICKET_ID);
+      logger.info("Booking data: reservationId={}, paymentConfirmationId={}, ticketId={}", response.reservationId, response.paymentConfirmationId, response.ticketId);
 
-      // Save to AWS
-      if (awsStorage != null) {
-        awsStorage.saveBooking(response.bookingReferenceId, response.reservationId, 
-            response.paymentConfirmationId, response.ticketId);
-      }
+      // // Save to AWS
+      // if (awsStorage != null) {
+      //   logger.info("Saving booking to database...");
+      //   awsStorage.saveBooking(response.bookingReferenceId, response.reservationId, 
+      //       response.paymentConfirmationId, response.ticketId);
+      // } else {
+      //   logger.warn("AwsStorageService is null - database save skipped");
+      // }
 
       workflowWaitObservation.stop("success");
       requestObservation.stop("success");
+      logger.info("Returning 200 OK response");
       return ResponseEntity.status(HttpStatus.OK).body(response);
     } catch (ClientStatusException ex) {
 
       // of course we can run into a timeout if the workflow does not finish
       // within that timeframe!
+      logger.error("ClientStatusException caught: {}", ex.getMessage(), ex);
       workflowWaitObservation.stop("timeout");
       requestObservation.stop("timeout");
       logger.error("Timeout on waiting for workflow");
