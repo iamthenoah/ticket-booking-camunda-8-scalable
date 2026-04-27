@@ -15,7 +15,7 @@
 		<micrometer.version>1.9.5</micrometer.version>
 		<spring.boot.version>2.7.5</spring.boot.version>
 		<zeebe.version>8.1.16</zeebe.version>
-		<aws.sdk.version>2.20.56</aws.sdk.version>
+		<aws.sdk.version>2.43.0</aws.sdk.version>
 	</properties>
 
 	<dependencies>
